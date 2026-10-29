@@ -51,22 +51,6 @@ ecriture.ai/
 └── README.md
 ```
 
-## Vercel Deployment
-
-The repository is configured as a Vercel project with two services:
-
-- `frontend`: the Vite application, publicly served for all non-API paths.
-- `backend`: the FastAPI application, publicly served under `/api/*`.
-
-The routing is defined in [`vercel.json`](./vercel.json). There are currently no
-service bindings because the frontend does not make an API request yet and the
-backend does not call another service. If either service starts calling another
-service, declare a binding on the caller and read the injected URL at runtime.
-
-The backend requires the OCR files under `backend/models/`. That directory is
-git-ignored, so the model files must be made available as part of the Vercel
-deployment process before the FastAPI service can start successfully.
-
 ---
 
 ## Prerequisites
@@ -128,9 +112,9 @@ Start the Uvicorn development server from the `backend` directory:
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-- **API Root**: `http://localhost:8000/api/`
-- **Interactive OpenAPI Docs**: `http://localhost:8000/api/docs`
-- **Health Check**: `http://localhost:8000/api/health`
+- **API Root**: `http://localhost:8000/`
+- **Interactive OpenAPI Docs**: `http://localhost:8000/docs`
+- **Health Check**: `http://localhost:8000/health`
 
 ### 4. Backend Configuration
 
@@ -169,7 +153,7 @@ Available scripts in `package.json`:
 
 ## API Reference
 
-### `GET /api/health`
+### `GET /health`
 
 Returns the operational status of the API and confirms whether the `FullPageOCR` singleton has finished initializing.
 
@@ -180,14 +164,14 @@ Returns the operational status of the API and confirms whether the `FullPageOCR`
 }
 ```
 
-### `POST /api/ocr`
+### `POST /ocr`
 
 Accepts a `multipart/form-data` image upload under the `file` field and returns the extracted full-page text.
 
 **Example Request:**
 
 ```bash
-curl -X POST "http://localhost:8000/api/ocr" \
+curl -X POST "http://localhost:8000/ocr" \
   -H "accept: application/json" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@sample_page.jpg"
@@ -212,7 +196,7 @@ Contributions should focus on modular, well-tested improvements to either the in
 ### Current Engineering Tasks
 
 - **Frontend Client Integration**:
-  - Implement the `/recognize` route (`Navbar.jsx` and `Footer.jsx` reference `/recognize`) with an image upload interface connected to `POST /api/ocr`.
+  - Implement the `/recognize` route (`Navbar.jsx` and `Footer.jsx` reference `/recognize`) with an image upload interface connected to `POST /ocr`.
   - Populate the placeholder page modules (`src/pages/Docs.jsx`, `src/pages/Features.jsx`) and shared UI components (`src/components/Button.jsx`).
   - Wire `ReactRouter` in `src/App.jsx` to handle navigation across `/`, `/recognize`, and `/about`.
 - **OCR Pipeline Enhancements**:
@@ -223,6 +207,6 @@ Contributions should focus on modular, well-tested improvements to either the in
 ### Pull Request Workflow
 
 1. Fork the repository and create a feature branch from `main`.
-2. Ensure the backend runs cleanly with `uvicorn main:app` and verify inference via `/api/ocr` when modifying `backend/`.
+2. Ensure the backend runs cleanly with `uvicorn main:app` and verify inference via `/ocr` when modifying `backend/`.
 3. Run `npm run lint` and `npm run build` in the root directory to verify zero linting or bundling errors when modifying `src/`.
 4. Keep commits atomic and open a pull request detailing the technical changes and any benchmark or latency impacts.
