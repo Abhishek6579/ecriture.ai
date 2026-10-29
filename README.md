@@ -1,180 +1,212 @@
-# Full-page OCR starter (pretrained models, CPU first)
+# ecriture.ai
 
-This is a **starter project**, not a trained model. It downloads pretrained weights and runs a two-stage pipeline:
+ecriture.ai is a full-page Optical Character Recognition (OCR) system designed for document text detection and line-level recognition. The backend implements a two-stage deep learning pipeline using Differentiable Binarization (DBNet) and Transformer-based OCR (TrOCR) exposed via a FastAPI service, paired with a React 19 and Vite 8 frontend.
 
-1. OpenCV DBNet ONNX detector proposes text regions.
-2. TrOCR recognizes the cropped regions and the API returns reconstructed text.
+---
 
-The first version uses a simple single-column reading-order heuristic. It is not a reliable multi-column/table layout engine. You must test it on your own scans before relying on its output.
+## Architecture and Inference Pipeline
 
-## 0. Model choice: printed text only
+The core recognition engine (`backend/ocr_engine.py`) processes full-page document images through a four-stage CPU-optimized pipeline:
 
-This project is configured for **printed text only**. Its default recognizer is the pretrained `microsoft/trocr-small-stage1` checkpoint. No model training or fine-tuning is required for the first version.
+1. **Text Detection (DBNet)**
+   - Uses a ResNet-50 Differentiable Binarization model (`DB_TD500_resnet50.onnx`) executed via OpenCV's DNN module (`cv2.dnn_TextDetectionModel_DB`).
+   - Input images are resized to $736 \times 736$ with ImageNet mean subtraction, binary threshold $0.3$, polygon threshold $0.5$, and unclip ratio $2.0$ to output quadrilateral bounding polygons.
 
-The small printed model has 61.4 million parameters and is fine-tuned on SROIE. TrOCR recognizes **single text-line images**, so this pipeline first detects/crops text from the full page and then sends the crops to TrOCR. See the model card: <https://huggingface.co/microsoft/trocr-small-printed>.
+2. **Reading-Order Grouping and Perspective Rectification**
+   - Detected polygons are sorted into reading lines (`_group_reading_rows`) by clustering vertical centroids within a tolerance of $0.5 \times \text{median line height}$, then ordered left-to-right per line.
+   - Polygon vertices are canonically ordered (top-left, top-right, bottom-right, bottom-left) and rectified into horizontal image crops via perspective transformation (`cv2.getPerspectiveTransform` and `cv2.warpPerspective`).
 
-Start with the small checkpoint because your deployment target is CPU-only. If accuracy is inadequate, evaluate `microsoft/trocr-base-printed` against the same held-out pages before switching. The base model is much larger (about 0.3B parameters), so expect a higher memory and compute cost: <https://huggingface.co/microsoft/trocr-base-printed>.
+3. **Aspect-Ratio Splitting and Variance Filtering**
+   - Because TrOCR resizes inputs to a fixed square resolution, wide text lines suffer from horizontal compression. Crops exceeding a maximum aspect ratio ($\text{width} / \text{height} > 10.0$) are binarized using Otsu's method and split along smoothed vertical-projection whitespace valleys (`_split_wide_crop`).
+   - Near-uniform false-positive crops with a grayscale standard deviation below `MIN_CROP_STD` ($12.0$ by default) are discarded prior to recognition.
 
-No handwritten model is used or needed in this project.
+4. **Sequence Recognition (TrOCR)**
+   - Rectified crops are batched and passed through `TrOCRProcessor` and `VisionEncoderDecoderModel` (`microsoft/trocr-small-stage1` by default) using greedy decoding (`num_beams=1`, `max_new_tokens=128`).
+   - Supports both PyTorch (`torch.inference_mode`) and ONNX Runtime (`optimum.onnxruntime.ORTModelForVision2Seq`) execution backends.
+   - Requests are serialized at the API layer via a threading lock (`INFERENCE_LOCK`) to prevent CPU oversubscription and memory spikes during concurrent requests.
 
-## 1. Requirements
+---
 
-Use Python 3.11 (recommended for the pinned starter dependencies). You do not need a GPU.
+## Repository Structure
 
-Windows PowerShell:
+```text
+ecriture.ai/
+├── backend/
+│   ├── models/                  # Git-ignored directory containing local model weights
+│   │   ├── DB_TD500_resnet50.onnx
+│   │   └── trocr-small-stage1/
+│   ├── download_detector.py     # Provisioning script for DBNet and TrOCR weights
+│   ├── main.py                  # FastAPI application and endpoint definitions
+│   ├── ocr_engine.py            # FullPageOCR pipeline implementation
+│   └── requirements.txt         # Python dependencies
+├── src/
+│   ├── assets/                  # Static visual assets
+│   ├── components/              # Reusable UI components (Navbar, Footer, UnderTheHood)
+│   ├── pages/                   # Application views (Home, Docs, Features)
+│   ├── styles/                  # Component and global stylesheets
+│   ├── App.jsx                  # Root component
+│   └── main.jsx                 # React DOM entry point
+├── index.html
+├── package.json
+└── README.md
+```
 
-```powershell
-mkdir full-page-ocr
-# Put this project folder's files in full-page-ocr, then:
-cd full-page-ocr
-py -3.11 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
-python -m pip install -r requirements.txt
+---
+
+## Prerequisites
+
+- **Python**: 3.10 or higher
+- **Node.js**: `^20.19.0` or `>=22.12.0` (required by Vite 8 and Oxlint)
+- **npm**: 10.x or higher
+
+---
+
+## Backend Setup
+
+### 1. Environment and Dependencies
+
+Navigate to the `backend` directory, create a virtual environment, and install the pinned dependencies:
+
+```bash
+cd backend
+python -m venv .venv
+```
+
+Activate the virtual environment:
+
+- **Linux / macOS**:
+  ```bash
+  source .venv/bin/activate
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  .\.venv\Scripts\Activate.ps1
+  ```
+
+Install the required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Model Weights (`backend/models/`)
+
+The `backend/models/` directory is excluded from version control via `.gitignore` and must be populated before starting the FastAPI server. It stores two models:
+
+1. **DBNet Detector**: `backend/models/DB_TD500_resnet50.onnx` (SHA-1: `1b4dd21a6baa5e3523156776970895bd3db6960a`)
+2. **TrOCR Recognizer**: `backend/models/trocr-small-stage1/` (processor configuration and `VisionEncoderDecoderModel` weights)
+
+Run the provisioning script to automatically download, verify, and cache both models locally:
+
+```bash
 python download_detector.py
 ```
 
-Linux/macOS:
+If you already have the `models` directory from another environment or wish to use custom weights, place them directly under `backend/models/` matching the structure above, or override their locations using environment variables.
+
+### 3. Running the API Server
+
+Start the Uvicorn development server from the `backend` directory:
 
 ```bash
-python3.11 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
-python -m pip install -r requirements.txt
-python download_detector.py
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-The detector downloader uses the official OpenCV DB_TD500 model link and checks the documented SHA-1. If Google Drive blocks the download, download `DB_TD500_resnet50.onnx` manually from the official OpenCV text-detection tutorial and place it in `models/`:
-<https://docs.opencv.org/5.0/tutorials/dnn/dnn_text_spotting/dnn_text_spotting.html>
+- **API Root**: `http://localhost:8000/`
+- **Interactive OpenAPI Docs**: `http://localhost:8000/docs`
+- **Health Check**: `http://localhost:8000/health`
 
-TrOCR weights and processor files are fetched automatically from Hugging Face the first time the app starts. That requires outbound internet access during first startup. On a free Render service, do not assume this cache will persist through spin-down/restarts; repeated cold starts may need to fetch weights again. For a real deployment, use an instance and model-storage strategy appropriate for the model size.
+### 4. Backend Configuration
 
-## 2. Run locally (PyTorch baseline)
+The OCR engine and FastAPI server can be configured via environment variables:
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `DBNET_MODEL_PATH` | `backend/models/DB_TD500_resnet50.onnx` | Path to the DBNet ONNX model file. |
+| `TROCR_MODEL_ID` | `microsoft/trocr-small-stage1` | Hugging Face model ID or local path. Defaults to `backend/models/trocr-small-stage1` if present. |
+| `OCR_BACKEND` | `pytorch` | Recognition runtime backend (`pytorch` or `onnx`). |
+| `TROCR_ONNX_DIR` | `models/trocr-onnx` | Directory containing exported ONNX TrOCR weights when `OCR_BACKEND=onnx`. |
+| `OCR_BATCH_SIZE` | `4` | Number of line crops processed per TrOCR forward pass. |
+| `MIN_CROP_STD` | `12.0` | Minimum grayscale standard deviation required to pass a crop to TrOCR. |
+| `TORCH_NUM_THREADS` | `2` | Number of CPU threads allocated to PyTorch intra-op parallelism. |
+| `MAX_UPLOAD_BYTES` | `15728640` | Maximum allowed file upload size in bytes (15 MB). |
+
+---
+
+## Frontend Setup
+
+From the repository root, install the Node.js dependencies and start the Vite development server:
 
 ```bash
-uvicorn main:app --host 127.0.0.1 --port 8000
+npm install
+npm run dev
 ```
 
-Open <http://127.0.0.1:8000/docs>, select `POST /ocr`, upload a JPG or PNG, and execute the request. The response contains the recognized `text`.
+Available scripts in `package.json`:
 
-### API reference
+- `npm run dev`: Starts the local development server with HMR.
+- `npm run build`: Bundles the application into `dist/` for production.
+- `npm run preview`: Serves the production build locally.
+- `npm run lint`: Runs static analysis using `oxlint`.
 
-| Method | Path      | Description                                                        |
-| ------ | --------- | ------------------------------------------------------------------ |
-| GET    | `/`       | Short welcome message                                              |
-| GET    | `/health` | `{"status": "ok", "model_loaded": true/false}`                     |
-| POST   | `/ocr`    | Multipart upload (`file`), JPG or PNG, 15 MB max by default         |
+---
 
-Error codes: `400` (empty or undecodable image), `413` (file too large), `503` (model still loading), `500` (inference failure, message includes the exception type).
+## API Reference
 
-Requests to `/ocr` are serialized with a lock so that concurrent uploads do not oversubscribe the CPU.
+### `GET /health`
 
-### Configuration
+Returns the operational status of the API and confirms whether the `FullPageOCR` singleton has finished initializing.
 
-Everything is read from environment variables. Defaults are sensible for local development.
+```json
+{
+  "status": "ok",
+  "model_loaded": true
+}
+```
 
-| Variable            | Default                               | Purpose                                                        |
-| ------------------- | ------------------------------------- | -------------------------------------------------------------- |
-| `DBNET_MODEL_PATH`  | `backend/models/DB_TD500_resnet50.onnx` | Path to the detector ONNX file                               |
-| `TROCR_MODEL_ID`    | local `models/trocr-small-stage1` if present, otherwise `microsoft/trocr-small-stage1` | Hugging Face ID or local directory for the recognizer |
-| `OCR_BACKEND`       | `pytorch`                             | `pytorch` or `onnx` (requires an exported model, see below)    |
-| `TROCR_ONNX_DIR`    | `models/trocr-onnx`                   | Directory of the exported ONNX recognizer                      |
-| `OCR_BATCH_SIZE`    | `4`                                   | Number of line crops sent to TrOCR per forward pass            |
-| `TORCH_NUM_THREADS` | `2`                                   | CPU threads for PyTorch                                        |
-| `MIN_CROP_STD`      | `12.0`                                | Crops with lower grayscale std-dev are treated as blank and skipped |
-| `MAX_UPLOAD_BYTES`  | `15728640` (15 MB)                    | Upload size limit                                              |
+### `POST /ocr`
 
-### How the pipeline works
+Accepts a `multipart/form-data` image upload under the `file` field and returns the extracted full-page text.
 
-Reading `ocr_engine.py` top to bottom is the fastest way to get oriented. In short:
-
-1. DBNet runs on a 736 x 736 resized page and returns quadrilateral text polygons.
-2. Polygons are grouped into rows by vertical center (tolerance is half the median box height), then sorted left to right. This is a single-column heuristic; multi-column pages and tables are not handled yet.
-3. Each polygon is perspective-warped into an upright crop with small padding.
-4. Crops wider than 10x their height are split at whitespace valleys so TrOCR's square resize does not squash the text.
-5. Near-uniform crops (false positives) are dropped using `MIN_CROP_STD`.
-6. Remaining crops are batched through TrOCR with greedy decoding (`num_beams=1`, `max_new_tokens=128`).
-7. Text is joined per row and rows are joined with newlines.
-
-### Optional: ONNX recognizer
-
-An ONNX export can reduce CPU latency. Export once on your machine (not per request):
-
-Test at least 20 representative pages. Check missed text, false detections, crop quality, reading order, punctuation, and whether long lines are squashed. The included `np.std(gray_crop) < 12` filter rejects low-variation crops, but may also reject faint writing; tune `MIN_CROP_STD` against your real samples.
-
-The detector uses 736 x 736 input because that is the documented recommended input for this DB_TD500 model. This is a scene-text baseline, not a guarantee of document-page or handwriting performance. If you see word-level boxes instead of line-level boxes, or bad detection on notebook pages, replace the detector with a suitable pretrained document-text detector before changing TrOCR.
-
-The reading-order code assumes mostly single-column pages. Multi-column documents, tables, forms, and complex handwritten pages need layout-aware ordering. Very long lines may need splitting at word gaps before recognition.
-
-## 4. Export TrOCR to ONNX (after the baseline works)
-
-Export on your development machine, not during every API request. From the project root:
+**Example Request:**
 
 ```bash
-optimum-cli export onnx --model microsoft/trocr-small-printed --task image-to-text-with-past models/trocr-onnx
+curl -X POST "http://localhost:8000/ocr" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@sample_page.jpg"
 ```
 
-If this task is unsupported by your installed Optimum/model combination, check supported tasks with:
+**Example Response:**
 
-```bash
-optimum-cli export onnx --help
+```json
+{
+  "filename": "sample_page.jpg",
+  "text": "Recognized line one\nRecognized line two",
+  "characters": 39
+}
 ```
 
-Then try the supported `image-to-text` task (without the `-with-past` suffix) and validate the result. Run the exported model locally by setting:
+---
 
-PowerShell:
+## Contributing
 
-```powershell
-$env:OCR_BACKEND="onnx"
-$env:TROCR_ONNX_DIR="models/trocr-onnx"
-uvicorn main:app --host 127.0.0.1 --port 8000
-```
+Contributions should focus on modular, well-tested improvements to either the inference pipeline or the web client.
 
-Bash:
+### Current Engineering Tasks
 
-```bash
-OCR_BACKEND=onnx TROCR_ONNX_DIR=models/trocr-onnx uvicorn main:app --host 127.0.0.1 --port 8000
-```
+- **Frontend Client Integration**:
+  - Implement the `/recognize` route (`Navbar.jsx` and `Footer.jsx` reference `/recognize`) with an image upload interface connected to `POST /ocr`.
+  - Populate the placeholder page modules (`src/pages/Docs.jsx`, `src/pages/Features.jsx`) and shared UI components (`src/components/Button.jsx`).
+  - Wire `ReactRouter` in `src/App.jsx` to handle navigation across `/`, `/recognize`, and `/about`.
+- **OCR Pipeline Enhancements**:
+  - **Layout Analysis**: Extend `FullPageOCR._group_reading_rows` in `backend/ocr_engine.py` to handle multi-column document layouts rather than assuming single-column reading order.
+  - **Handwriting Checkpoints**: Benchmark `microsoft/trocr-base-handwritten` and `microsoft/trocr-large-handwritten` against `trocr-small-stage1` for cursive and unconstrained handwritten inputs.
+  - **ONNX Export Tooling**: Add a utility script to export TrOCR checkpoints to ONNX format (`models/trocr-onnx`) for out-of-the-box usage with `OCR_BACKEND=onnx`.
 
-Compare OCR text and latency with the PyTorch baseline on the **same** test pages. ONNX export validity does not prove recognition equivalence. `image-to-text-with-past` is intended to export cached decoder states when supported, which can avoid repeating decoder work for generated tokens.
+### Pull Request Workflow
 
-If the ONNX output directory is too large for ordinary GitHub files, do not commit large model blobs to the source repository. Host the exported model directory in a model-artifact store (for example, a Hugging Face model repository) or use Git LFS, then fetch it during the Render build. Keep an eye on storage/build-time limits.
-
-## 5. Deploy to Render
-
-Push the code to GitHub, but do not commit large ONNX/model files. Configure the detector download and model artifact download as part of the Render build process, or use a public model artifact URL.
-
-Recommended Render **Build Command** for the PyTorch baseline:
-
-```bash
-pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt && python download_detector.py
-```
-
-Recommended **Start Command**:
-
-```bash
-uvicorn main:app --host 0.0.0.0 --port $PORT
-```
-
-Render's official FastAPI guide uses the same host/port pattern: <https://render.com/docs/deploy-fastapi>.
-
-Set these environment variables in Render if needed:
-
-- `TROCR_MODEL_ID`: defaults to `microsoft/trocr-small-printed`; use `microsoft/trocr-base-printed` only if you have benchmarked it and chosen the larger model
-- `OCR_BACKEND`: `pytorch` for the first deployment, `onnx` after the ONNX directory is available
-- `TROCR_ONNX_DIR`: path to the exported ONNX directory when using ONNX
-- `TORCH_NUM_THREADS`: start with `1` or `2` on a small CPU instance
-- `MIN_CROP_STD`: default `12.0`
-
-**Important:** Render's current Free web-service tier has 512 MB RAM and 0.1 CPU, and free services spin down after inactivity. This OCR stack is likely to be too heavy/slow there. A 1 CPU / 2 GB plan is a more realistic starting point for model-based inference, though actual memory and latency must still be measured. The pretrained model downloads and the encoder/decoder generation are significant memory and CPU costs; ONNX is an optimization to benchmark, not a promise of a fixed speedup. Source: <https://render.com/pricing> and <https://render.com/docs/free>.
-
-## 6. Next improvements
-
-1. Add a visual debug endpoint/image that overlays detected polygons on the page.
-2. Add robust line grouping and multi-column layout handling.
-3. Split excessively wide line crops at validated whitespace gaps.
-4. Evaluate CER/WER on a manually transcribed test set.
-5. Benchmark end-to-end p50/p95 latency and peak RAM under concurrent requests.
-6. Only then consider ONNX graph optimization or quantization.
+1. Fork the repository and create a feature branch from `main`.
+2. Ensure the backend runs cleanly with `uvicorn main:app` and verify inference via `/ocr` when modifying `backend/`.
+3. Run `npm run lint` and `npm run build` in the root directory to verify zero linting or bundling errors when modifying `src/`.
+4. Keep commits atomic and open a pull request detailing the technical changes and any benchmark or latency impacts.

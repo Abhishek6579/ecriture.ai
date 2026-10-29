@@ -31,7 +31,7 @@ def main() -> None:
         downloaded = gdown.download(MODEL_URL, str(MODEL_PATH), quiet=False, fuzzy=True)
         if not downloaded or not MODEL_PATH.exists() or MODEL_PATH.stat().st_size < 1_000_000:
             raise RuntimeError(
-                "Detector download failed. Open the official OpenCV model page linked in README.md "
+                "Detector download failed. Open the official OpenCV model page"
                 "and download DB_TD500_resnet50.onnx manually into the models folder."
             )
 
