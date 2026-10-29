@@ -4,9 +4,9 @@ import { Menu, X, ArrowUpRight } from 'lucide-react';
 import '../styles/Navbar.css';
 
 const links = [
-  { label: 'Home', to: '/' },
-  { label: 'Recognition', to: '/recognize' },
-  { label: 'About', to: '/about' },
+  { label: 'HOME', to: '/' },
+  { label: 'RECOGNITION', to: '/recognize' },
+  { label: 'ABOUT', to: '/about' },
 ];
 
 export default function Navbar() {

@@ -1,5 +1,5 @@
-
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowDown,
   ArrowRight,
@@ -125,6 +125,10 @@ function SiteNavigation() {
           <a href="#system" onClick={closeMenu}>SYSTEM</a>
           <a href="#process" onClick={closeMenu}>PROCESS</a>
           <a href="#project" onClick={closeMenu}>PROJECT</a>
+
+          <Link to="/recognize" onClick={closeMenu}>
+            RECOGNITION
+          </Link>
 
           <a className="nav-cta" href="#system" onClick={closeMenu}>
             EXPLORE SYSTEM <ArrowUpRight size={13} />
@@ -295,9 +299,9 @@ function IntroSection() {
               EXPLORE THE SYSTEM <ArrowUpRight size={15} />
             </a>
 
-            <a href="#process" className="button-secondary">
-              HOW IT WORKS <ArrowRight size={15} />
-            </a>
+            <Link to="/recognize" className="button-secondary">
+              TRY RECOGNITION <ArrowUpRight size={15} />
+            </Link>
           </div>
 
           <div className="hero-meta">
