@@ -1,0 +1,139 @@
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 72px;
+  background: rgba(5, 5, 5, 0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.07em;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #4b4b4b;
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: -0.08em;
+}
+
+.brand-dot {
+  color: var(--cyan);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+}
+
+.nav-link {
+  position: relative;
+  padding-block: 8px;
+  color: #a5a5a5;
+  font-size: 12px;
+  transition: color 180ms ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #fff;
+}
+
+.nav-link.active::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: var(--cyan);
+  content: '';
+}
+
+.nav-launch {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1px solid #565656;
+  font-family: var(--mono);
+  font-size: 10px;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.nav-launch:hover {
+  color: #000;
+  background: var(--cyan);
+  border-color: var(--cyan);
+}
+
+.menu-toggle {
+  display: none;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .navbar {
+    height: 64px;
+  }
+
+  .menu-toggle {
+    display: grid;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 63px;
+    right: 0;
+    left: 0;
+    display: none;
+    align-items: stretch;
+    gap: 0;
+    padding: 12px 18px 20px;
+    border-bottom: 1px solid var(--border);
+    background: #080808;
+  }
+
+  .nav-links.is-open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav-link {
+    padding: 16px 4px;
+    border-bottom: 1px solid #222;
+  }
+
+  .nav-link.active::after {
+    display: none;
+  }
+
+  .nav-launch {
+    justify-content: space-between;
+    margin-top: 16px;
+  }
+}
