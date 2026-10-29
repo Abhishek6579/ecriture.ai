@@ -4,18 +4,35 @@ import os
 import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
-
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, HTTPException, UploadFile
-
+from dotenv import load_dotenv  # Added for .env loading
+from fastapi import FastAPI, File, HTTPException, Security, UploadFile, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security.api_key import APIKeyHeader
 from ocr_engine import FullPageOCR
+
+# Load environment variables from a local .env file if present
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
 DETECTOR_PATH = Path(os.getenv("DBNET_MODEL_PATH", str(BASE_DIR / "models" / "DB_TD500_resnet50.onnx")))
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(15 * 1024 * 1024)))
+API_KEY = os.getenv("API_KEY")
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
 OCR = None
 INFERENCE_LOCK = threading.Lock()
+
+
+def verify_api_key(api_key: str = Security(api_key_header)):
+    if not api_key or api_key != API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials. Provide a valid X-API-Key header.",
+        )
+    return api_key
 
 
 @asynccontextmanager
@@ -33,6 +50,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Read ALLOWED_ORIGINS from .env, falling back to localhost defaults if not specified
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000")
+origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/")
 def root():
@@ -40,12 +69,12 @@ def root():
 
 
 @app.get("/health")
-def health():
+def health(api_key: str = Security(verify_api_key)):
     return {"status": "ok", "model_loaded": OCR is not None}
 
 
 @app.post("/ocr")
-def ocr_page(file: UploadFile = File(...)):
+def ocr_page(file: UploadFile = File(...), api_key: str = Security(verify_api_key)):
     if OCR is None:
         raise HTTPException(status_code=503, detail="OCR model is still loading.")
 
@@ -59,7 +88,6 @@ def ocr_page(file: UploadFile = File(...)):
     if image is None:
         raise HTTPException(status_code=400, detail="Could not decode the uploaded image.")
 
-    # Serialize model calls to avoid CPU oversubscription and memory spikes on small instances.
     try:
         with INFERENCE_LOCK:
             text = OCR.predict_page(image)

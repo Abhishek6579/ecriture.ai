@@ -9,6 +9,7 @@ import numpy as np
 import torch
 from PIL import Image
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+from preprocess import apply_clahe
 
 
 class FullPageOCR:
@@ -225,7 +226,12 @@ class FullPageOCR:
     def predict_page(self, image_bgr: np.ndarray) -> str:
         if image_bgr is None or image_bgr.ndim != 3:
             raise ValueError("Expected a valid BGR image with three channels.")
-
+            # Apply CLAHE preprocessing before detection and crop extraction
+        image_bgr = apply_clahe(
+            image_bgr,
+            clip_limit=float(os.getenv("CLAHE_CLIP_LIMIT", "5.0")),
+            brightness_offset=int(os.getenv("CLAHE_BRIGHTNESS_OFFSET", "30")),
+        )
         polygons, _scores = self.detector.detect(image_bgr)
         if polygons is None or len(polygons) == 0:
             return ""
