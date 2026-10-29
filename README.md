@@ -9,7 +9,7 @@ The first version uses a simple single-column reading-order heuristic. It is not
 
 ## 0. Model choice: printed text only
 
-This project is configured for **printed text only**. Its default recognizer is the pretrained `microsoft/trocr-small-printed` checkpoint. No model training or fine-tuning is required for the first version.
+This project is configured for **printed text only**. Its default recognizer is the pretrained `microsoft/trocr-small-stage1` checkpoint. No model training or fine-tuning is required for the first version.
 
 The small printed model has 61.4 million parameters and is fine-tuned on SROIE. TrOCR recognizes **single text-line images**, so this pipeline first detects/crops text from the full page and then sends the crops to TrOCR. See the model card: <https://huggingface.co/microsoft/trocr-small-printed>.
 
@@ -59,7 +59,48 @@ uvicorn main:app --host 127.0.0.1 --port 8000
 
 Open <http://127.0.0.1:8000/docs>, select `POST /ocr`, upload a JPG or PNG, and execute the request. The response contains the recognized `text`.
 
-## 3. Inspect results before deploying
+### API reference
+
+| Method | Path      | Description                                                        |
+| ------ | --------- | ------------------------------------------------------------------ |
+| GET    | `/`       | Short welcome message                                              |
+| GET    | `/health` | `{"status": "ok", "model_loaded": true/false}`                     |
+| POST   | `/ocr`    | Multipart upload (`file`), JPG or PNG, 15 MB max by default         |
+
+Error codes: `400` (empty or undecodable image), `413` (file too large), `503` (model still loading), `500` (inference failure, message includes the exception type).
+
+Requests to `/ocr` are serialized with a lock so that concurrent uploads do not oversubscribe the CPU.
+
+### Configuration
+
+Everything is read from environment variables. Defaults are sensible for local development.
+
+| Variable            | Default                               | Purpose                                                        |
+| ------------------- | ------------------------------------- | -------------------------------------------------------------- |
+| `DBNET_MODEL_PATH`  | `backend/models/DB_TD500_resnet50.onnx` | Path to the detector ONNX file                               |
+| `TROCR_MODEL_ID`    | local `models/trocr-small-stage1` if present, otherwise `microsoft/trocr-small-stage1` | Hugging Face ID or local directory for the recognizer |
+| `OCR_BACKEND`       | `pytorch`                             | `pytorch` or `onnx` (requires an exported model, see below)    |
+| `TROCR_ONNX_DIR`    | `models/trocr-onnx`                   | Directory of the exported ONNX recognizer                      |
+| `OCR_BATCH_SIZE`    | `4`                                   | Number of line crops sent to TrOCR per forward pass            |
+| `TORCH_NUM_THREADS` | `2`                                   | CPU threads for PyTorch                                        |
+| `MIN_CROP_STD`      | `12.0`                                | Crops with lower grayscale std-dev are treated as blank and skipped |
+| `MAX_UPLOAD_BYTES`  | `15728640` (15 MB)                    | Upload size limit                                              |
+
+### How the pipeline works
+
+Reading `ocr_engine.py` top to bottom is the fastest way to get oriented. In short:
+
+1. DBNet runs on a 736 x 736 resized page and returns quadrilateral text polygons.
+2. Polygons are grouped into rows by vertical center (tolerance is half the median box height), then sorted left to right. This is a single-column heuristic; multi-column pages and tables are not handled yet.
+3. Each polygon is perspective-warped into an upright crop with small padding.
+4. Crops wider than 10x their height are split at whitespace valleys so TrOCR's square resize does not squash the text.
+5. Near-uniform crops (false positives) are dropped using `MIN_CROP_STD`.
+6. Remaining crops are batched through TrOCR with greedy decoding (`num_beams=1`, `max_new_tokens=128`).
+7. Text is joined per row and rows are joined with newlines.
+
+### Optional: ONNX recognizer
+
+An ONNX export can reduce CPU latency. Export once on your machine (not per request):
 
 Test at least 20 representative pages. Check missed text, false detections, crop quality, reading order, punctuation, and whether long lines are squashed. The included `np.std(gray_crop) < 12` filter rejects low-variation crops, but may also reject faint writing; tune `MIN_CROP_STD` against your real samples.
 
