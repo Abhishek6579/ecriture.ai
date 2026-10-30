@@ -15,12 +15,12 @@ import {
 import '../styles/Home.css';
 import UnderTheHood from '../components/UnderTheHood.jsx';
 
-const sectionLinks = {
-  '01': '#top',
-  '02': '#system',
-  '03': '#process',
-  '04': '#project',
-};
+// const sectionLinks = {
+//   '01': '#top',
+//   '02': '#system',
+//   '03': '#process',
+//   '04': '#project',
+// };
 
 const projectModules = [
   {
@@ -109,13 +109,13 @@ function SiteNavigation() {
           </span>
         </a>
 
-        <div className="nav-index" aria-label="Page sections">
+        {/* <div className="nav-index" aria-label="Page sections">
           {Object.entries(sectionLinks).map(([number, link]) => (
             <a href={link} key={number}>
               {number}
             </a>
           ))}
-        </div>
+        </div> */}
 
         <nav
           className={`nav-links ${
