@@ -28,9 +28,6 @@ const ACCEPTED_TYPES = [
 export default function Recognize() {
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
-  const videoRef = useRef(null);
-  const cameraStreamRef = useRef(null);
-  const [cameraOpen, setCameraOpen] = useState(false);
 
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
@@ -298,7 +295,7 @@ export default function Recognize() {
                   <button
                     type="button"
                     className="secondary-button camera-button"
-                    onClick={startCamera}
+                    onClick={() => cameraInputRef.current?.click()}
                   >
                     <Camera size={16} />
                     Take photo
