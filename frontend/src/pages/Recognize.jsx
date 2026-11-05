@@ -28,8 +28,6 @@ const ACCEPTED_TYPES = [
 export default function Recognize() {
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
-  const [cameraOpen, setCameraOpen] = useState(false);
-
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [dragging, setDragging] = useState(false);
@@ -67,69 +65,6 @@ export default function Recognize() {
     };
 
     reader.readAsDataURL(selectedFile);
-  }
-    async function startCamera() {
-    setError('');
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: 'environment' }
-        },
-        audio: false
-      });
-
-      cameraStreamRef.current = stream;
-      setCameraOpen(true);
-
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      }, 100);
-
-    } catch (err) {
-      setError('Unable to access camera. Check browser permissions and HTTPS.');
-    }
-  }
-
-  function stopCamera() {
-    cameraStreamRef.current?.getTracks().forEach(track => track.stop());
-    cameraStreamRef.current = null;
-    setCameraOpen(false);
-  }
-
-  function capturePhoto() {
-    const video = videoRef.current;
-
-    if (!video || !video.videoWidth) {
-      setError('Camera is not ready. Try again.');
-      return;
-    }
-
-    const canvas = document.createElement('canvas');
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    const context = canvas.getContext('2d');
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    canvas.toBlob(blob => {
-      if (!blob) {
-        setError('Could not capture the photo. Try again.');
-        return;
-      }
-
-      const photo = new File(
-        [blob],
-        `camera-capture-${Date.now()}.jpg`,
-        { type: 'image/jpeg' }
-      );
-
-      stopCamera();
-      selectFile(photo);
-    }, 'image/jpeg', 0.92);
   }
 
   function resetPage() {
@@ -296,7 +231,9 @@ export default function Recognize() {
                   <button
                     type="button"
                     className="secondary-button camera-button"
-                    onClick={() => cameraInputRef.current?.click()}
+                    onClick={() => {
+                      cameraInputRef.current?.click();
+                    }}
                   >
                     <Camera size={16} />
                     Take photo
@@ -355,25 +292,6 @@ export default function Recognize() {
                   printed text and minimal blur.
                 </p>
               </div>
-              {cameraOpen && (
-                <div className="camera-overlay">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    style={{ width: '100%', maxWidth: '500px' }}
-                  />
-
-                  <button onClick={capturePhoto}>
-                    Capture Photo
-                  </button>
-
-                  <button onClick={stopCamera}>
-                    Cancel
-                  </button>
-                </div>
-              )}
             </section>
 
             <section className="output-panel">
