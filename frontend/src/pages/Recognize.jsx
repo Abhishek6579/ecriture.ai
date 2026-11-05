@@ -28,6 +28,7 @@ const ACCEPTED_TYPES = [
 export default function Recognize() {
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
