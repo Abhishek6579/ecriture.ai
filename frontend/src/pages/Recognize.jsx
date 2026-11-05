@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import Navbar from '../components/Navbar.jsx';
+import { recognizeImage } from '../services/ocrService.js';
 import '../styles/Recognize.css';
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
@@ -123,13 +124,19 @@ export default function Recognize() {
     setOutput('');
     setCopied(false);
 
-    // Frontend placeholder only.
-    // Replace this section when the OCR API is integrated.
-    setOutput(
-      'OCR is not connected yet. Your image has been selected successfully, but no text has been extracted. The backend integration will enable real recognition.'
-    );
+    try {
+      const result = await recognizeImage(file);
 
-    setProcessing(false);
+      if (result.text) {
+        setOutput(result.text);
+      } else {
+        setError('No text was detected. Try a sharper image of printed text.');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setProcessing(false);
+    }
   }
 
   return (
@@ -164,7 +171,7 @@ export default function Recognize() {
             </div>
 
             <span className="demo-badge">
-              FRONTEND DEMO
+              PRINTED TEXT OCR
             </span>
           </div>
 
@@ -271,20 +278,13 @@ export default function Recognize() {
                 </div>
 
                 <span className="output-status">
-                  {output ? 'DEMO MESSAGE' : 'AWAITING INPUT'}
+                  {processing ? 'PROCESSING' : output ? 'COMPLETE' : 'AWAITING INPUT'}
                 </span>
               </div>
 
               <div className="output-content">
                 {output ? (
                   <div className="output-result">
-                    <div className="demo-notice">
-                      <AlertCircle size={17} />
-                      <span>
-                        Preview only — actual OCR is not connected.
-                      </span>
-                    </div>
-
                     <p>{output}</p>
                   </div>
                 ) : (
@@ -296,9 +296,8 @@ export default function Recognize() {
                     <h3>Your transcription will appear here</h3>
 
                     <p>
-                      Select a book page to prepare it for text
-                      recognition. The connected OCR model will
-                      eventually return the extracted text here.
+                      Select a book page and press Recognize text.
+                      The extracted text will appear here.
                     </p>
                   </div>
                 )}
@@ -350,7 +349,7 @@ export default function Recognize() {
           <div className="recognize-footer">
             <div className="privacy-note">
               <CheckCircle2 size={16} />
-              <span>Local image preview · No upload to a server yet</span>
+              <span>Images are sent to the OCR service and not stored</span>
             </div>
 
             <div className="workspace-actions">

@@ -372,6 +372,7 @@
   font-size: 13px;
   line-height: 1.9;
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .output-actions {
