@@ -543,3 +543,16 @@
     line-height: 1.7;
   }
 }
+
+.upload-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.camera-button {
+  min-height: 42px;
+  padding: 0 15px;
+}

@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import {
   Upload,
+  Camera,
   Image as ImageIcon,
   FileText,
   ScanText,
@@ -12,7 +13,6 @@ import {
   AlertCircle,
   LoaderCircle,
 } from 'lucide-react';
-
 import Navbar from '../components/Navbar.jsx';
 import { recognizeImage } from '../services/ocrService.js';
 import '../styles/Recognize.css';
@@ -27,6 +27,10 @@ const ACCEPTED_TYPES = [
 
 export default function Recognize() {
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const cameraStreamRef = useRef(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
@@ -65,6 +69,69 @@ export default function Recognize() {
     };
 
     reader.readAsDataURL(selectedFile);
+  }
+    async function startCamera() {
+    setError('');
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: 'environment' }
+        },
+        audio: false
+      });
+
+      cameraStreamRef.current = stream;
+      setCameraOpen(true);
+
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }, 100);
+
+    } catch (err) {
+      setError('Unable to access camera. Check browser permissions and HTTPS.');
+    }
+  }
+
+  function stopCamera() {
+    cameraStreamRef.current?.getTracks().forEach(track => track.stop());
+    cameraStreamRef.current = null;
+    setCameraOpen(false);
+  }
+
+  function capturePhoto() {
+    const video = videoRef.current;
+
+    if (!video || !video.videoWidth) {
+      setError('Camera is not ready. Try again.');
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob(blob => {
+      if (!blob) {
+        setError('Could not capture the photo. Try again.');
+        return;
+      }
+
+      const photo = new File(
+        [blob],
+        `camera-capture-${Date.now()}.jpg`,
+        { type: 'image/jpeg' }
+      );
+
+      stopCamera();
+      selectFile(photo);
+    }, 'image/jpeg', 0.92);
   }
 
   function resetPage() {
@@ -217,7 +284,8 @@ export default function Recognize() {
                   <p>
                     Drag an image here or select one from your device.
                   </p>
-
+                  
+                  <div className="upload-actions">
                   <button
                     type="button"
                     className="recognize-button upload-button"
@@ -226,6 +294,16 @@ export default function Recognize() {
                     <Upload size={16} />
                     Choose image
                   </button>
+
+                  <button
+                    type="button"
+                    className="secondary-button camera-button"
+                    onClick={startCamera}
+                  >
+                    <Camera size={16} />
+                    Take photo
+                  </button>
+                </div>
 
                   <span className="upload-formats">
                     JPG, PNG, WEBP · MAX 15 MB
@@ -260,6 +338,17 @@ export default function Recognize() {
                   event.target.value = '';
                 }}
               />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                hidden
+                onChange={(event) => {
+                  selectFile(event.target.files?.[0]);
+                  event.target.value = '';
+                }}
+              />
 
               <div className="source-note">
                 <AlertCircle size={15} />
@@ -268,6 +357,25 @@ export default function Recognize() {
                   printed text and minimal blur.
                 </p>
               </div>
+              {cameraOpen && (
+                <div className="camera-overlay">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    style={{ width: '100%', maxWidth: '500px' }}
+                  />
+
+                  <button onClick={capturePhoto}>
+                    Capture Photo
+                  </button>
+
+                  <button onClick={stopCamera}>
+                    Cancel
+                  </button>
+                </div>
+              )}
             </section>
 
             <section className="output-panel">
