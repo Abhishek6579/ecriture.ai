@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import {
   Upload,
+  Camera,
   Image as ImageIcon,
   FileText,
   ScanText,
@@ -12,7 +13,6 @@ import {
   AlertCircle,
   LoaderCircle,
 } from 'lucide-react';
-
 import Navbar from '../components/Navbar.jsx';
 import { recognizeImage } from '../services/ocrService.js';
 import '../styles/Recognize.css';
@@ -27,7 +27,7 @@ const ACCEPTED_TYPES = [
 
 export default function Recognize() {
   const fileInputRef = useRef(null);
-
+  const cameraInputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [dragging, setDragging] = useState(false);
@@ -217,7 +217,8 @@ export default function Recognize() {
                   <p>
                     Drag an image here or select one from your device.
                   </p>
-
+                  
+                  <div className="upload-actions">
                   <button
                     type="button"
                     className="recognize-button upload-button"
@@ -226,6 +227,18 @@ export default function Recognize() {
                     <Upload size={16} />
                     Choose image
                   </button>
+
+                  <button
+                    type="button"
+                    className="secondary-button camera-button"
+                    onClick={() => {
+                      cameraInputRef.current?.click();
+                    }}
+                  >
+                    <Camera size={16} />
+                    Take photo
+                  </button>
+                </div>
 
                   <span className="upload-formats">
                     JPG, PNG, WEBP · MAX 15 MB
@@ -254,6 +267,17 @@ export default function Recognize() {
                 ref={fileInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
+                hidden
+                onChange={(event) => {
+                  selectFile(event.target.files?.[0]);
+                  event.target.value = '';
+                }}
+              />
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
                 hidden
                 onChange={(event) => {
                   selectFile(event.target.files?.[0]);
