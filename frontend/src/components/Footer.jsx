@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
+import ScrambleText from './ScrambleText.jsx';
 
 export default function Footer() {
   
@@ -22,8 +23,8 @@ export default function Footer() {
             <span>ecriture<span className="brand-dot">.</span>ai</span>
           </Link>
           <p>
-            Exploring the relationship between handwriting,
-            machine learning, and digital information.
+            Exploring the relationship between document images,
+            machine learning, and digital text.
           </p>
         </div>
 
@@ -32,7 +33,7 @@ export default function Footer() {
           <span className="footer-heading">NAVIGATION</span>
           <Link to="/">Home</Link>
           <Link to="/recognize">Recognition</Link>
-          <Link to="/about">About the project</Link>
+          <Link to="/architecture">Architecture</Link>
         </div>
 
         {/* explore stuff */}
@@ -47,12 +48,12 @@ export default function Footer() {
       </div>
 
       <div className="container footer-bottom">
-        <span>© {new Date().getFullYear()} ECRITURE.AI</span>
-        <span>AN AI HANDWRITING RECOGNITION PROJECT</span>
+        <span>© {new Date().getFullYear()} ECRITURE.AI · ALL RIGHTS RESERVED</span>
+        <span>A FULL-PAGE DOCUMENT OCR PROJECT</span>
         
         {/* Using the helper function instead of inline arrow func */}
         <a href="#top" onClick={scrollToTop}>
-          BACK TO TOP ↑
+          <ScrambleText text="BACK TO TOP ↑" />
         </a>
       </div>
     </footer>

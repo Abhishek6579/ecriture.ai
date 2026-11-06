@@ -8,12 +8,12 @@ import {
   Cpu,
   FileText,
   Activity,
-  Menu,
-  X,
   MoveUpRight,
 } from 'lucide-react';
 import '../styles/Home.css';
 import UnderTheHood from '../components/UnderTheHood.jsx';
+import ScrambleText from '../components/ScrambleText.jsx';
+import Navbar from '../components/Navbar.jsx';
 
 // const sectionLinks = {
 //   '01': '#top',
@@ -26,18 +26,18 @@ const projectModules = [
   {
     number: '01',
     icon: ScanText,
-    title: 'Handwriting recognition',
+    title: 'Document text recognition',
     tag: 'IMAGE / TEXT',
     description:
-      'Explore how handwritten marks can be translated into machine-readable digital text.',
+      'Page images are detected, segmented into line crops, and decoded into machine-readable text.',
   },
   {
     number: '02',
     icon: Cpu,
-    title: 'Artificial intelligence',
+    title: 'OCR inference models',
     tag: 'MODEL / INFERENCE',
     description:
-      'Discover the machine learning techniques behind the handwriting recognition system.',
+      'DBNet locates text regions while TrOCR recognises the rectified line images.',
   },
   {
     number: '03',
@@ -45,7 +45,7 @@ const projectModules = [
     title: 'Digital transformation',
     tag: 'INPUT / OUTPUT',
     description:
-      'Understand the transition from handwritten documents to structured digital information.',
+      'Turn document images into searchable, shareable digital text.',
   },
   {
     number: '04',
@@ -62,28 +62,28 @@ const processStages = [
     number: '01',
     title: 'Image acquisition',
     description:
-      'A handwritten page enters the system as a digital image.',
+      'A JPG, PNG, or WebP page image is uploaded from the browser (up to 15 MB) and sent as multipart form data to the OCR API.',
     label: 'VISUAL INPUT',
   },
   {
     number: '02',
     title: 'Image processing',
     description:
-      'The input can be prepared and normalized for the recognition model.',
+      'OpenCV decodes the upload and CLAHE enhances local contrast before DBNet looks for text regions.',
     label: 'PREPROCESSING',
   },
   {
     number: '03',
     title: 'Model inference',
     description:
-      'A trained recognition model analyzes the handwriting and predicts text.',
+      'DBNet finds text polygons; rectified line crops are then passed in batches to TrOCR for sequence recognition.',
     label: 'AI INFERENCE',
   },
   {
     number: '04',
     title: 'Text output',
     description:
-      'The predicted text can be presented for review and further use.',
+      'FastAPI returns the extracted text, source filename, and character count for review, copying, or download.',
     label: 'DIGITAL OUTPUT',
   },
 ];
@@ -92,66 +92,9 @@ function getStageClass(isActive, activeClass) {
   return isActive ? activeClass : '';
 }
 
-function SiteNavigation() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  function closeMenu() {
-    setMenuOpen(false);
-  }
-
-  return (
-    <header className="navbar" id="top">
-      <div className="navbar-inner">
-        <a href="#top" className="wordmark" onClick={closeMenu}>
-          <span className="wordmark-symbol">e.</span>
-          <span>
-            ecriture<span className="cyan">.ai</span>
-          </span>
-        </a>
-
-        {/* <div className="nav-index" aria-label="Page sections">
-          {Object.entries(sectionLinks).map(([number, link]) => (
-            <a href={link} key={number}>
-              {number}
-            </a>
-          ))}
-        </div> */}
-
-        <nav
-          className={`nav-links ${
-            getStageClass(menuOpen, 'nav-links-open')
-          }`}
-        >
-          <a href="#system" onClick={closeMenu}>SYSTEM</a>
-          <a href="#process" onClick={closeMenu}>PROCESS</a>
-          <a href="#project" onClick={closeMenu}>PROJECT</a>
-
-          <Link to="/recognize" onClick={closeMenu}>
-            RECOGNITION
-          </Link>
-
-          <a className="nav-cta" href="#system" onClick={closeMenu}>
-            EXPLORE SYSTEM <ArrowUpRight size={13} />
-          </a>
-        </nav>
-
-        <button
-          className="menu-toggle"
-          type="button"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          {menuOpen ? <X size={19} /> : <Menu size={19} />}
-        </button>
-      </div>
-    </header>
-  );
-}
-
 function RecognitionIllustration() {
   return (
-    <div className="hero-visual">
+    <div className="hero-visual spotlight-card">
       <div className="visual-header">
         <span>FIG. 001 / RECOGNITION STUDY</span>
         <span className="visual-live">
@@ -167,7 +110,7 @@ function RecognitionIllustration() {
           viewBox="0 0 440 360"
           className="handwriting-svg"
           role="img"
-          aria-label="Abstract visualization of handwriting being converted into digital text"
+          aria-label="Abstract visualization of document text being converted into digital text"
         >
           <defs>
             <pattern
@@ -222,7 +165,7 @@ function RecognitionIllustration() {
           />
 
           <g fill="#8b8b8b" fontFamily="monospace" fontSize="8">
-            <text x="42" y="58">HANDWRITTEN INPUT</text>
+            <text x="42" y="58">DOCUMENT INPUT</text>
             <text x="276" y="58">PREDICTED OUTPUT</text>
           </g>
 
@@ -279,19 +222,17 @@ function IntroSection() {
         <div className="hero-copy">
           <div className="eyebrow">
             <span className="status-dot" />
-            AI / HANDWRITING RECOGNITION
+            DOCUMENT / TEXT RECOGNITION
           </div>
 
           <h1>
-            Written by hand.
+            Written on a page.
             <br />
-            <span>Understood by AI.</span>
+            <span className="hero-scramble">Understood by AI.</span>
           </h1>
 
           <p className="hero-description">
-            Exploring the space between human writing and machine
-            intelligence. Turning handwritten information into a
-            format the digital world can understand.
+            A full-page OCR system that combines DBNet text detection and TrOCR line recognition to turn document images into digital text.
           </p>
 
           <div className="hero-buttons">
@@ -326,7 +267,7 @@ function IntroSection() {
 
 function TopicOverview() {
   return (
-    <section className="section system-section" id="system">
+    <section className="section system-section scroll-reveal" id="system">
       <div className="container">
         <div className="system-heading">
           <div>
@@ -339,9 +280,7 @@ function TopicOverview() {
             </h2>
 
             <p className="section-description">
-              Handwriting recognition is more than reading characters.
-              It is a process that connects visual information,
-              learned patterns, and machine-readable output.
+              Document OCR connects visual input, text-region detection, geometric correction, and sequence recognition to produce machine-readable output.
             </p>
           </div>
 
@@ -358,7 +297,7 @@ function TopicOverview() {
             const ModuleIcon = module.icon;
 
             return (
-              <article className="module-card" key={module.number}>
+              <article className="module-card spotlight-card" key={module.number}>
                 <div className="module-top">
                   <span className="mono module-number">
                     {module.number}
@@ -390,25 +329,23 @@ function RecognitionProcess() {
   const currentStage = processStages[selectedStage];
 
   return (
-    <section className="section process-section" id="process">
+    <section className="section process-section scroll-reveal" id="process">
       <div className="container">
         <div className="eyebrow">03 / PROCESS ARCHITECTURE</div>
 
         <div className="process-heading">
           <h2 className="section-title">
-            From handwriting
+            From document image
             <br />
-            to digital understanding.
+            to digital text.
           </h2>
 
           <p className="section-description">
-            A conceptual look at the steps involved in an AI handwriting
-            recognition pipeline. The exact implementation depends on
-            the model and preprocessing used by the project.
+            Explore the implemented DBNet + TrOCR path, from image validation and text detection to rectified crops and decoded text.
           </p>
         </div>
 
-        <div className="process-panel">
+        <div className="process-panel spotlight-card">
           <div className="stage-list">
             {processStages.map((stage, index) => (
               <button
@@ -464,7 +401,7 @@ function RecognitionProcess() {
 
 function ProjectIntroduction() {
   return (
-    <section className="project-section" id="project">
+    <section className="project-section scroll-reveal" id="project">
       <div className="container project-layout">
         <div>
           <div className="eyebrow">04 / THE PROJECT</div>
@@ -476,16 +413,14 @@ function ProjectIntroduction() {
           </h2>
 
           <p>
-            An engineering project exploring AI-powered handwriting
-            recognition, its underlying technology, and its practical
-            applications.
+            An engineering project exploring full-page document OCR, its underlying computer vision pipeline, and practical applications.
           </p>
         </div>
 
-        <a href="#top" className="project-link">
+        <Link to="/recognize" className="project-link">
           <span>EXPLORE ECRITURE.AI</span>
           <ArrowUpRight size={18} />
-        </a>
+        </Link>
       </div>
     </section>
   );
@@ -503,17 +438,17 @@ function SiteFooter() {
         </a>
 
         <span className="footer-description">
-          HANDWRITING / INTELLIGENCE / DIGITAL TEXT
+          DOCUMENT OCR / INTELLIGENCE / DIGITAL TEXT
         </span>
 
         <a href="#top" className="back-top">
-          BACK TO TOP ↑
+          <ScrambleText text="BACK TO TOP ↑" />
         </a>
       </div>
 
       <div className="footer-bottom">
-        <span>© {new Date().getFullYear()} ECRITURE.AI</span>
-        <span>AN AI HANDWRITING RECOGNITION PROJECT</span>
+        <span>© {new Date().getFullYear()} ECRITURE.AI · ALL RIGHTS RESERVED</span>
+        <span>A FULL-PAGE DOCUMENT OCR PROJECT</span>
       </div>
     </footer>
   );
@@ -522,7 +457,7 @@ function SiteFooter() {
 export default function HomePage() {
   return (
     <>
-      <SiteNavigation />
+      <Navbar />
 
       <main>
         <IntroSection />

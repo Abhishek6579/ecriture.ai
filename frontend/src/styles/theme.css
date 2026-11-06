@@ -1,0 +1,204 @@
+:root {
+  --bg-elevated: #080b0d;
+  --panel-deep: #07090a;
+  --border-strong: #40474a;
+  --muted-2: #777f83;
+  --grid-line: #292f32;
+  --status-green: #5bd7a1;
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg: #f4f7f8;
+  --panel: #ffffff;
+  --bg-elevated: #ffffff;
+  --panel-deep: #edf2f4;
+  --border: #dbe2e5;
+  --border-strong: #c2cdd2;
+  --text: #162126;
+  --muted: #5c696f;
+  --muted-2: #78858a;
+  --cyan: #087f9d;
+  --yellow: #986d21;
+  --grid-line: #d8e0e3;
+  --status-green: #16885c;
+  color-scheme: light;
+}
+
+html, body, #root { min-height: 100%; }
+html { background: var(--bg); transition: background-color .25s ease, color .25s ease; }
+body { color: var(--text); background: var(--bg); transition: color .25s ease, background-color .25s ease; }
+
+/* One continuous Threadpool-style cursor glow across the page background. */
+html, body { background-color: var(--bg); }
+body {
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--muted-2) 28%, transparent) .75px, transparent .9px);
+  background-size: 22px 22px;
+}
+body::before {
+  position: fixed;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  opacity: var(--pointer-glow-opacity, 0);
+  background: radial-gradient(560px circle at var(--pointer-x, 50vw) var(--pointer-y, 25vh), color-mix(in srgb, var(--cyan) 13%, transparent), transparent 72%);
+  transition: opacity .9s ease;
+}
+#root { position: relative; z-index: 1; }
+/* Spotlight is global now; cards remain visually unchanged on hover. */
+.spotlight-card::before { display: none !important; }
+.spotlight-card:hover { border-color: var(--border); }
+.spotlight-card > * { position: relative; z-index: 1; }
+
+/* Quiet motion cues drawn from the Sketch2Shape interface. */
+.hero-visual { animation: visual-float 8s ease-in-out infinite; }
+.visual-canvas { overflow: hidden; }
+.visual-canvas::after {
+  position: absolute;
+  top: 0;
+  right: 13px;
+  left: 13px;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--cyan), #8b83ff, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--cyan) 60%, transparent);
+  content: '';
+  animation: visual-scan 6s ease-in-out infinite;
+}
+@keyframes visual-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes visual-scan { 0% { top: 3%; opacity: 0; } 8% { opacity: .85; } 65% { top: 94%; opacity: .65; } 75%, 100% { top: 94%; opacity: 0; } }
+
+/* Light theme: keep contrast high while retaining the dark technical illustrations. */
+:root[data-theme='light'] .site-nav { background: rgba(244, 248, 249, .68); border-bottom-color: rgba(155, 174, 181, .48); box-shadow: 0 8px 28px rgba(33, 57, 66, .045); }
+:root[data-theme='light'] .site-nav-link { color: #647279; }
+:root[data-theme='light'] .site-nav-link:hover,
+:root[data-theme='light'] .site-nav-link.active { color: #152126; }
+:root[data-theme='light'] .site-nav-links { background: rgba(247, 250, 251, .72); backdrop-filter: blur(24px) saturate(155%); }
+:root[data-theme='light'] .api-status-button { background: color-mix(in srgb, var(--status-color) 8%, white); }
+:root[data-theme='light'] .theme-toggle,
+:root[data-theme='light'] .site-menu-toggle { background: #fff; }
+:root[data-theme='light'] .hero-grid-bg { opacity: .42; background-image: linear-gradient(#d9e1e4 1px, transparent 1px), linear-gradient(90deg, #d9e1e4 1px, transparent 1px); }
+:root[data-theme='light'] .hero h1 .hero-scramble { background: linear-gradient(100deg, #68747a, #087f9d 75%); background-clip: text; -webkit-background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+:root[data-theme='light'] .hero-description,
+:root[data-theme='light'] .section-description,
+:root[data-theme='light'] .module-card p,
+:root[data-theme='light'] .project-layout p { color: #58666c; }
+:root[data-theme='light'] .button-secondary { border-color: #c5d0d4; color: #26363d; }
+:root[data-theme='light'] .hero-meta,
+:root[data-theme='light'] .index-aside .mono,
+:root[data-theme='light'] .scroll-cue { color: #738087; }
+:root[data-theme='light'] .index-aside,
+:root[data-theme='light'] .module-grid,
+:root[data-theme='light'] .module-card,
+:root[data-theme='light'] .process-panel { border-color: var(--border); }
+:root[data-theme='light'] .module-card { background: #fff; }
+:root[data-theme='light'] .module-card:hover { background: #f6fbfc; }
+:root[data-theme='light'] .module-number { color: #46545a; }
+:root[data-theme='light'] .module-link { border-color: var(--border); color: #637178; }
+:root[data-theme='light'] .stage-button { color: #58666c; }
+:root[data-theme='light'] .stage-button:hover,
+:root[data-theme='light'] .stage-active { background: #eaf5f7; color: #12242b; }
+:root[data-theme='light'] .stage-large-number { color: #e3e9eb; }
+:root[data-theme='light'] .stage-detail p { color: #58666c; }
+:root[data-theme='light'] .stage-progress span { background: #d5dfe2; }
+:root[data-theme='light'] .stage-progress .progress-active { background: var(--cyan); }
+:root[data-theme='light'] .project-section { background: radial-gradient(ellipse at 80% 50%, #00a9ce0e, transparent 52%), #edf3f5; }
+:root[data-theme='light'] .project-link { border-color: #bcc9ce; }
+:root[data-theme='light'] .footer { background: #f4f7f8; }
+:root[data-theme='light'] .footer-description,
+:root[data-theme='light'] .back-top,
+:root[data-theme='light'] .footer-bottom { color: #718087; }
+:root[data-theme='light'] .hood-section { background: radial-gradient(ellipse at 30% 55%, rgba(0, 155, 190, .055), transparent 45%), #edf3f5; }
+:root[data-theme='light'] .orbit { border-color: #cbd6da; }
+:root[data-theme='light'] .orbit-outer { border-color: #c1cdd1; }
+:root[data-theme='light'] .orbit-center { border-color: #cbd8dc; background: radial-gradient(circle at 50% 30%, #fff, #edf3f5 75%); }
+:root[data-theme='light'] .orbit-node { border-color: #cbd6da; background: #fff; color: #65757c; }
+:root[data-theme='light'] .orbit-node:hover,
+:root[data-theme='light'] .orbit-node-active { background: #e8f5f8; color: var(--cyan); }
+:root[data-theme='light'] .hood-details { border-color: #d3dde1; background: linear-gradient(145deg, #fff, #f1f5f6); }
+:root[data-theme='light'] .detail-top,
+:root[data-theme='light'] .detail-bottom,
+:root[data-theme='light'] .hood-footnote { color: #738087; }
+:root[data-theme='light'] .detail-top,
+:root[data-theme='light'] .detail-divider,
+:root[data-theme='light'] .hood-footnote { border-color: var(--border); }
+:root[data-theme='light'] .hood-details > p { color: #58666c; }
+:root[data-theme='light'] .detail-value { color: #26363d; }
+:root[data-theme='light'] .detail-progress button { background: #d0dade; }
+:root[data-theme='light'] .detail-progress button.progress-active { background: var(--cyan); }
+
+:root[data-theme='light'] .recognize-page {
+  --recognize-bg: #f2f6f7;
+  --recognize-panel: #fff;
+  --recognize-border: #dbe2e5;
+  --recognize-muted: #637178;
+  --recognize-text: #17252b;
+  --recognize-accent: #087f9d;
+}
+:root[data-theme='light'] .recognize-page .recognize-heading > p { color: #59676d; }
+:root[data-theme='light'] .recognize-page .document-panel,
+:root[data-theme='light'] .recognize-page .output-panel { background: #fff; }
+:root[data-theme='light'] .recognize-page .upload-zone { border-color: #c3d0d5; background: #fbfdfe; }
+:root[data-theme='light'] .recognize-page .upload-zone-active { background: #eef9fb; }
+:root[data-theme='light'] .recognize-page .upload-icon,
+:root[data-theme='light'] .recognize-page .output-empty-icon { border-color: #dbe3e6; background: #f2f7f8; }
+:root[data-theme='light'] .recognize-page .output-result { color: #26373e; }
+:root[data-theme='light'] .recognize-page .recognize-button { background: #087f9d; color: white; }
+:root[data-theme='light'] .recognize-page .secondary-button { border-color: #c8d3d7; color: #33444b; }
+:root[data-theme='light'] .recognize-page .privacy-note { color: #637178; }
+:root[data-theme='light'] .recognize-page .icon-button { color: #46575e; }
+
+@media (max-width: 720px) {
+  :root[data-theme='light'] .site-nav-links { background: rgba(247, 250, 251, .72); backdrop-filter: blur(24px) saturate(155%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-visual, .visual-canvas::after { animation: none; }
+  .spotlight-card::before { transition: none; }
+  .architecture-stage { animation: none !important; }
+  .scroll-reveal { opacity: 1; transform: none; transition: none; }
+}
+
+
+/* Architecture route: preserve the technical contrast while making every panel
+   and diagram readable when the global theme is switched to light. */
+:root[data-theme='light'] .architecture-engine-card,
+:root[data-theme='light'] .architecture-detail-spec,
+:root[data-theme='light'] .contract-card {
+  box-shadow: 0 18px 55px rgba(25, 48, 58, .07);
+}
+:root[data-theme='light'] .architecture-engine-card { border-color: #cbd7dc; }
+:root[data-theme='light'] .engine-node { box-shadow: 0 5px 18px rgba(25, 48, 58, .09); }
+:root[data-theme='light'] .architecture-stage { background: #fff; }
+:root[data-theme='light'] .architecture-stage-active { background: #edf8fa; }
+:root[data-theme='light'] .architecture-stage-connector { background: #fff; }
+:root[data-theme='light'] .architecture-detail-spec,
+:root[data-theme='light'] .contract-card { background: #fff; }
+:root[data-theme='light'] .contract-card pre { background: #f3f7f8; color: #176a50; }
+:root[data-theme='light'] .architecture-status-band { background: linear-gradient(100deg, #eaf7f9, #fff); }
+:root[data-theme='light'] .architecture-footer { background: #edf2f4; }
+:root[data-theme='light'] .architecture-footer-bottom { border-color: #d8e1e4; }
+:root[data-theme='light'] .architecture-engine-card .engine-node-b { color: #6559bb; }
+
+@media (max-width: 500px) {
+  :root[data-theme='light'] .api-status-button { background: color-mix(in srgb, var(--status-color) 8%, white); }
+}
+
+
+/* Progressive section reveals borrowed from the reference frontend. */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity .68s cubic-bezier(.2,.7,.2,1), transform .68s cubic-bezier(.2,.7,.2,1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.scroll-reveal.is-visible { opacity: 1; transform: none; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal, .scroll-reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
