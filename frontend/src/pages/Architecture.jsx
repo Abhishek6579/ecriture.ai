@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   ArrowDown,
-  ArrowRight,
   ArrowUpRight,
   Braces,
   BrainCircuit,
@@ -200,11 +199,10 @@ export default function Architecture() {
                 onClick={() => setActiveStage(index)}
                 aria-pressed={activeStage === index}
               >
-                <span className="architecture-stage-top"><span>{stage.number}</span><ArrowUpRight size={14} /></span>
+                <span className="architecture-stage-top"><span>{stage.number}</span></span>
                 <span className="architecture-stage-icon"><StageIcon size={20} strokeWidth={1.55} /></span>
                 <strong>{stage.title}</strong>
                 <small>{stage.tag}</small>
-                {index < stages.length - 1 && <span className="architecture-stage-connector" aria-hidden="true"><ArrowRight size={13} /></span>}
               </button>
             );
           })}

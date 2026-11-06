@@ -6,7 +6,12 @@
   --grid-line: #292f32;
   --status-green: #5bd7a1;
   --dot-base: rgba(164, 175, 180, .22);
-  --dot-highlight: #d5dfe3;
+  --illustration-panel: #080808;
+  --illustration-border: #303030;
+  --illustration-grid: #272727;
+  --illustration-lines: #464646;
+  --illustration-label: #8b8b8b;
+  --illustration-dots: #3c3c3c;
   color-scheme: dark;
 }
 
@@ -25,7 +30,12 @@
   --grid-line: #d8e0e3;
   --status-green: #16885c;
   --dot-base: rgba(76, 91, 98, .22);
-  --dot-highlight: #26383f;
+  --illustration-panel: #ffffff;
+  --illustration-border: #cbd6da;
+  --illustration-grid: #e1e8eb;
+  --illustration-lines: #9ba9ae;
+  --illustration-label: #637178;
+  --illustration-dots: #d4dfe2;
   color-scheme: light;
 }
 
@@ -33,27 +43,21 @@ html, body, #root { min-height: 100%; }
 html { background: var(--bg); transition: background-color .25s ease, color .25s ease; }
 body { color: var(--text); background: var(--bg); transition: color .25s ease, background-color .25s ease; }
 
-/* Monochrome Threadpool-style dot field: no square grid and no coloured halo. */
+/* One canvas paints the site's only background dot field. Pointer proximity
+   changes the colour/brightness of those same dots; no second dot layer exists. */
 html, body { background-color: var(--bg); }
-body {
-  background-image: radial-gradient(circle, var(--dot-base) .8px, transparent 1.05px);
-  background-size: 22px 22px;
-}
-body::before {
+body { background-image: none !important; }
+.pointer-dot-field {
   position: fixed;
   z-index: 0;
   inset: 0;
+  display: block;
+  width: 100vw;
+  height: 100vh;
   pointer-events: none;
-  content: '';
-  opacity: var(--pointer-glow-opacity, 0);
-  background-image: radial-gradient(circle, var(--dot-highlight) 1.05px, transparent 1.4px);
-  background-size: 22px 22px;
-  -webkit-mask-image: radial-gradient(circle 560px at var(--pointer-x, 50vw) var(--pointer-y, 25vh), rgba(0, 0, 0, .96) 0%, rgba(0, 0, 0, .72) 42%, transparent 100%);
-  mask-image: radial-gradient(circle 560px at var(--pointer-x, 50vw) var(--pointer-y, 25vh), rgba(0, 0, 0, .96) 0%, rgba(0, 0, 0, .72) 42%, transparent 100%);
-  transition: opacity .9s ease;
 }
 #root { position: relative; z-index: 1; }
-/* Keep the pointer-lit dot field continuous behind every section, not attached to cards. */
+/* The spotlight is global rather than attached to cards. */
 .spotlight-card::before { display: none !important; }
 .spotlight-card:hover { border-color: var(--border); }
 .spotlight-card > * { position: relative; z-index: 1; }
@@ -178,7 +182,6 @@ body::before {
 :root[data-theme='light'] .engine-node { box-shadow: 0 5px 18px rgba(25, 48, 58, .09); }
 :root[data-theme='light'] .architecture-stage { background: #fff; }
 :root[data-theme='light'] .architecture-stage-active { background: #edf8fa; }
-:root[data-theme='light'] .architecture-stage-connector { background: #fff; }
 :root[data-theme='light'] .architecture-detail-spec,
 :root[data-theme='light'] .contract-card { background: #fff; }
 :root[data-theme='light'] .contract-card pre { background: #f3f7f8; color: #176a50; }

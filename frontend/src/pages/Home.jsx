@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowDown,
-  ArrowRight,
   ArrowUpRight,
   ScanText,
   Cpu,
@@ -18,7 +16,7 @@ import Navbar from '../components/Navbar.jsx';
 // const sectionLinks = {
 //   '01': '#top',
 //   '02': '#system',
-//   '03': '#process',
+//   '03': '/process',
 //   '04': '#project',
 // };
 
@@ -57,41 +55,6 @@ const projectModules = [
   },
 ];
 
-const processStages = [
-  {
-    number: '01',
-    title: 'Image acquisition',
-    description:
-      'A JPG, PNG, or WebP page image is uploaded from the browser (up to 15 MB) and sent as multipart form data to the OCR API.',
-    label: 'VISUAL INPUT',
-  },
-  {
-    number: '02',
-    title: 'Image processing',
-    description:
-      'OpenCV decodes the upload and CLAHE enhances local contrast before DBNet looks for text regions.',
-    label: 'PREPROCESSING',
-  },
-  {
-    number: '03',
-    title: 'Model inference',
-    description:
-      'DBNet finds text polygons; rectified line crops are then passed in batches to TrOCR for sequence recognition.',
-    label: 'AI INFERENCE',
-  },
-  {
-    number: '04',
-    title: 'Text output',
-    description:
-      'FastAPI returns the extracted text, source filename, and character count for review, copying, or download.',
-    label: 'DIGITAL OUTPUT',
-  },
-];
-
-function getStageClass(isActive, activeClass) {
-  return isActive ? activeClass : '';
-}
-
 function RecognitionIllustration() {
   return (
     <div className="hero-visual spotlight-card">
@@ -119,7 +82,7 @@ function RecognitionIllustration() {
               height="18"
               patternUnits="userSpaceOnUse"
             >
-              <circle cx="1" cy="1" r="0.8" fill="#3c3c3c" />
+              <circle cx="1" cy="1" r="0.8" fill="var(--illustration-dots)" />
             </pattern>
 
             <linearGradient id="ink" x1="0" y1="0" x2="1" y2="1">
@@ -135,11 +98,11 @@ function RecognitionIllustration() {
             y="38"
             width="390"
             height="284"
-            fill="#080808"
-            stroke="#303030"
+            fill="var(--illustration-panel)"
+            stroke="var(--illustration-border)"
           />
 
-          <g stroke="#272727" strokeWidth="1">
+          <g stroke="var(--illustration-grid)" strokeWidth="1">
             <path d="M42 95 H398" />
             <path d="M42 151 H398" />
             <path d="M42 207 H398" />
@@ -164,12 +127,12 @@ function RecognitionIllustration() {
             fill="none"
           />
 
-          <g fill="#8b8b8b" fontFamily="monospace" fontSize="8">
+          <g fill="var(--illustration-label)" fontFamily="monospace" fontSize="8">
             <text x="42" y="58">DOCUMENT INPUT</text>
             <text x="276" y="58">PREDICTED OUTPUT</text>
           </g>
 
-          <g stroke="#464646" strokeWidth="1">
+          <g stroke="var(--illustration-lines)" strokeWidth="1">
             <path d="M278 110 H370" />
             <path d="M278 128 H388" />
             <path d="M278 146 H359" />
@@ -186,7 +149,7 @@ function RecognitionIllustration() {
             <circle cx="278" cy="216" r="2.3" />
           </g>
 
-          <g fill="#777" fontFamily="monospace" fontSize="8">
+          <g fill="var(--illustration-label)" fontFamily="monospace" fontSize="8">
             <text x="42" y="298">INPUT / IMAGE DATA</text>
             <text x="276" y="298">OUTPUT / TEXT DATA</text>
           </g>
@@ -311,10 +274,10 @@ function TopicOverview() {
                   <p>{module.description}</p>
                 </div>
 
-                <a className="module-link" href="#process">
+                <Link className="module-link" to="/process">
                   <span>EXPLORE CONCEPT</span>
                   <MoveUpRight size={15} />
-                </a>
+                </Link>
               </article>
             );
           })}
@@ -324,74 +287,24 @@ function TopicOverview() {
   );
 }
 
-function RecognitionProcess() {
-  const [selectedStage, setSelectedStage] = useState(0);
-  const currentStage = processStages[selectedStage];
-
+function ProcessOverview() {
   return (
-    <section className="section process-section scroll-reveal" id="process">
+    <section className="section process-section process-overview scroll-reveal" id="process">
       <div className="container">
         <div className="eyebrow">03 / PROCESS ARCHITECTURE</div>
-
         <div className="process-heading">
           <h2 className="section-title">
             From document image
             <br />
             to digital text.
           </h2>
-
-          <p className="section-description">
-            Explore the implemented DBNet + TrOCR path, from image validation and text detection to rectified crops and decoded text.
-          </p>
-        </div>
-
-        <div className="process-panel spotlight-card">
-          <div className="stage-list">
-            {processStages.map((stage, index) => (
-              <button
-                type="button"
-                className={`stage-button ${getStageClass(
-                  selectedStage === index,
-                  'stage-active'
-                )}`}
-                key={stage.number}
-                onClick={() => setSelectedStage(index)}
-                aria-pressed={selectedStage === index}
-              >
-                <span className="mono">{stage.number}</span>
-                <span>{stage.title}</span>
-                <ArrowRight size={15} />
-              </button>
-            ))}
-          </div>
-
-          <div className="stage-detail" aria-live="polite">
-            <span className="stage-label">
-              PROCESS STAGE / {currentStage.number}
-            </span>
-
-            <div className="stage-large-number">
-              {currentStage.number}
-            </div>
-
-            <h3>{currentStage.title}</h3>
-            <p>{currentStage.description}</p>
-
-            <div className="stage-bottom">
-              <span>{currentStage.label}</span>
-
-              <div className="stage-progress">
-                {processStages.map((stage, index) => (
-                  <span
-                    key={stage.number}
-                    className={getStageClass(
-                      index <= selectedStage,
-                      'progress-active'
-                    )}
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="process-overview-action">
+            <p className="section-description">
+              Explore the complete DBNet and TrOCR pipeline, including image validation, text detection, geometric correction, crop filtering, and recognition.
+            </p>
+            <Link to="/process" className="process-page-link">
+              EXPLORE THE FULL PIPELINE <ArrowUpRight size={15} />
+            </Link>
           </div>
         </div>
       </div>
@@ -462,7 +375,7 @@ export default function HomePage() {
       <main>
         <IntroSection />
         <TopicOverview />
-        <RecognitionProcess />
+        <ProcessOverview />
         <UnderTheHood />
         <ProjectIntroduction />
       </main>

@@ -33,9 +33,9 @@ export default function Navbar() {
           <NavLink to="/" end onClick={closeMenu} className={({ isActive }) => `site-nav-link${isActive ? ' active' : ''}`}>
             OVERVIEW
           </NavLink>
-          <Link to="/#process" className="site-nav-link" onClick={closeMenu}>
+          <NavLink to="/process" onClick={closeMenu} className={({ isActive }) => `site-nav-link${isActive ? ' active' : ''}`}>
             PROCESS
-          </Link>
+          </NavLink>
           <NavLink to="/architecture" onClick={closeMenu} className={({ isActive }) => `site-nav-link${isActive ? ' active' : ''}`}>
             ARCHITECTURE
           </NavLink>
