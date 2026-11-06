@@ -274,3 +274,14 @@
   -webkit-backdrop-filter: blur(32px) saturate(185%) !important;
   box-shadow: 0 10px 34px rgba(37, 62, 72, .10), inset 0 1px 0 rgba(255, 255, 255, .75);
 }
+.site-nav {
+  background: rgba(8, 11, 13, 0.66) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(190%) !important;
+  backdrop-filter: blur(32px) saturate(190%) !important;
+}
+
+:root[data-theme='light'] .site-nav {
+  background: rgba(244, 249, 251, 0.64) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(185%) !important;
+  backdrop-filter: blur(32px) saturate(185%) !important;
+}
