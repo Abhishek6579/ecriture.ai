@@ -14,6 +14,7 @@ import {
   LoaderCircle,
 } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
+import Footer from '../components/Footer.jsx';
 import { recognizeImage } from '../services/ocrService.js';
 import '../styles/Recognize.css';
 
@@ -408,6 +409,7 @@ export default function Recognize() {
           ECRITURE.AI / PRESERVING PRINTED KNOWLEDGE FOR THE DIGITAL AGE
         </p>
       </main>
+      <Footer />
     </>
   );
 }

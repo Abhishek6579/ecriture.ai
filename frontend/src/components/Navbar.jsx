@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { ArrowUpRight, Check, ChevronDown, CircleAlert, LoaderCircle, Menu, Moon, Sun, WifiOff, X } from 'lucide-react';
 import { useAppContext } from '../context/AppContext.jsx';
+import ScrambleText from './ScrambleText.jsx';
 import '../styles/SiteNav.css';
 
 const STATUS = {
@@ -33,9 +34,6 @@ export default function Navbar() {
           <NavLink to="/" end onClick={closeMenu} className={({ isActive }) => `site-nav-link${isActive ? ' active' : ''}`}>
             OVERVIEW
           </NavLink>
-          <NavLink to="/process" onClick={closeMenu} className={({ isActive }) => `site-nav-link${isActive ? ' active' : ''}`}>
-            PROCESS
-          </NavLink>
           <NavLink to="/architecture" onClick={closeMenu} className={({ isActive }) => `site-nav-link${isActive ? ' active' : ''}`}>
             ARCHITECTURE
           </NavLink>
@@ -43,7 +41,7 @@ export default function Navbar() {
             RECOGNITION
           </NavLink>
           <Link to="/recognize" className="site-nav-cta" onClick={closeMenu}>
-            OPEN WORKSPACE <ArrowUpRight size={14} />
+            <ScrambleText text="OPEN WORKSPACE" /> <ArrowUpRight size={14} />
           </Link>
         </nav>
 

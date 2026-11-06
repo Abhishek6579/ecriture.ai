@@ -4,10 +4,13 @@
   z-index: 1000;
   height: 72px;
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 56%, transparent);
-  border-bottom-color: color-mix(in srgb, var(--border) 72%, transparent);
-  backdrop-filter: blur(24px) saturate(155%);
-  -webkit-backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--bg) 68%, transparent);
+  border-top: 1px solid color-mix(in srgb, white 13%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--border) 58%, transparent);
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .16), inset 0 1px 0 rgba(255, 255, 255, .075);
+  isolation: isolate;
 }
 
 .site-nav-inner {
@@ -224,8 +227,10 @@
     gap: 0;
     padding: 12px 20px 20px;
     border-bottom: 1px solid var(--border);
-    background: var(--bg-elevated);
-    box-shadow: 0 22px 45px #0003;
+    background: color-mix(in srgb, var(--bg-elevated) 78%, transparent);
+    backdrop-filter: blur(30px) saturate(185%);
+    -webkit-backdrop-filter: blur(30px) saturate(185%);
+    box-shadow: 0 22px 45px #0003, inset 0 1px 0 rgba(255, 255, 255, .06);
   }
   .site-nav-links.site-nav-open { display: flex; flex-direction: column; }
   .site-nav-link { padding: 15px 4px; border-bottom: 1px solid var(--border); font-size: 10px; }
@@ -249,4 +254,23 @@
 
 @media (prefers-reduced-motion: reduce) {
   .api-status-orbit::after, .api-checking .api-status-orbit svg, .api-warming .api-status-orbit svg { animation: none; }
+}
+
+
+/* Liquid-glass navigation surface: keep the content visible through the blur. */
+:root[data-theme='dark'] .site-nav {
+  background: rgba(8, 11, 13, .66) !important;
+  border-top-color: rgba(255, 255, 255, .10);
+  border-bottom-color: rgba(190, 207, 214, .18) !important;
+  backdrop-filter: blur(32px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(190%) !important;
+  box-shadow: 0 10px 36px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .07);
+}
+:root[data-theme='light'] .site-nav {
+  background: rgba(244, 249, 251, .64) !important;
+  border-top-color: rgba(255, 255, 255, .88);
+  border-bottom-color: rgba(115, 143, 153, .28) !important;
+  backdrop-filter: blur(32px) saturate(185%) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(185%) !important;
+  box-shadow: 0 10px 34px rgba(37, 62, 72, .10), inset 0 1px 0 rgba(255, 255, 255, .75);
 }
