@@ -304,7 +304,7 @@ function ProcessOverview() {
               Explore the complete DBNet and TrOCR pipeline, including image validation, text detection, geometric correction, crop filtering, and recognition.
             </p>
             <Link to="/process" className="process-page-link">
-              EXPLORE THE FULL PIPELINE <ArrowUpRight size={15} />
+              <ScrambleText text="EXPLORE THE FULL PIPELINE" /> <ArrowUpRight size={15} />
             </Link>
           </div>
         </div>
