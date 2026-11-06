@@ -318,7 +318,7 @@ function ProjectIntroduction() {
     <section className="project-section scroll-reveal" id="project">
       <div className="container project-layout">
         <div>
-          <div className="eyebrow">04 / THE PROJECT</div>
+          <div className="eyebrow">05 / THE PROJECT</div>
 
           <h2>
             Bridging the gap

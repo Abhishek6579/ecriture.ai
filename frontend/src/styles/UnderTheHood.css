@@ -1,7 +1,7 @@
 
 .hood-section {
   padding-block: 110px;
-  border-bottom: 1px solid var(--border);
+  /* border-bottom: 1px solid var(--border); */
   overflow: hidden;
   background:
     radial-gradient(
