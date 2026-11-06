@@ -11,6 +11,7 @@ const STATUS = {
   warming: { label: 'MODEL WARMING', Icon: LoaderCircle },
   offline: { label: 'API OFFLINE', Icon: WifiOff },
   unauthorized: { label: 'API KEY NEEDED', Icon: CircleAlert },
+  misconfigured: { label: 'API URL NEEDED', Icon: CircleAlert },
 };
 
 export default function Navbar() {
@@ -19,7 +20,7 @@ export default function Navbar() {
   const status = STATUS[apiState] || STATUS.checking;
   const StatusIcon = status.Icon;
   const ThemeIcon = theme === 'dark' ? Sun : Moon;
-  const compactStatus = { online: 'API OK', warming: 'WARMING', checking: 'CHECKING', offline: 'OFFLINE', unauthorized: 'KEY NEEDED' }[apiState] || 'CHECKING';
+  const compactStatus = { online: 'API OK', warming: 'WARMING', checking: 'CHECKING', offline: 'OFFLINE', unauthorized: 'KEY NEEDED', misconfigured: 'SET URL' }[apiState] || 'CHECKING';
   const closeMenu = () => setMenuOpen(false);
 
   return (
@@ -58,7 +59,7 @@ export default function Navbar() {
             <span className="api-status-orbit"><StatusIcon size={13} strokeWidth={2.3} /></span>
             <span className="api-status-copy">
               <strong>{status.label}</strong>
-              <small>{apiState === 'online' ? 'SYSTEM READY' : apiState === 'warming' ? 'LOADING MODELS' : apiState === 'checking' ? 'PINGING /HEALTH' : apiState === 'unauthorized' ? 'CHECK API KEY' : 'RETRY CONNECTION'}</small>
+              <small>{apiState === 'online' ? 'SYSTEM READY' : apiState === 'warming' ? 'LOADING MODELS' : apiState === 'checking' ? 'PINGING /HEALTH' : apiState === 'unauthorized' ? 'CHECK API KEY' : apiState === 'misconfigured' ? 'SET VITE_API_URL' : 'RETRY CONNECTION'}</small>
             </span>
             <span className="api-status-compact">{compactStatus}</span>
             <span className="api-status-refresh"><ChevronDown size={12} /></span>

@@ -156,7 +156,7 @@ export default function Recognize() {
             clickEffect="tear"
           />
         </div>
-        <section className="recognize-heading scroll-reveal">
+        <section className="recognize-heading">
           <div className="recognize-eyebrow">
             <span className="recognize-status-dot" />
             DIGITAL PRESERVATION / OCR WORKSPACE
@@ -175,7 +175,7 @@ export default function Recognize() {
           </p>
         </section>
 
-        <section className="recognize-workspace scroll-reveal">
+        <section className="recognize-workspace">
           <div className="workspace-topbar">
             <div>
               <span className="workspace-index">WORKSPACE / 01</span>

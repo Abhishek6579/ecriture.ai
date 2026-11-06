@@ -908,40 +908,53 @@
 
 
 
-/* ThreadPool-inspired section separators: subtle diagonal hatch bands instead
-   of hard, single-pixel rules. Kept local to the landing page. */
+/* Section boundaries: slim card-outline rails with a cyan trail that sweeps
+   from one end to the other. Kept local to the landing page. */
 .landing-main > section + section::before,
 .landing-main + .footer::before {
   position: absolute;
   top: 0;
-  right: 0;
-  left: 0;
+  right: 26px;
+  left: 26px;
   z-index: 3;
-  height: 14px;
-  border-top: 1px dotted rgba(145, 158, 164, 0.34);
-  border-bottom: 1px dotted rgba(145, 158, 164, 0.22);
-  background-color: rgba(145, 158, 164, 0.025);
-  background-image: repeating-linear-gradient(
-    135deg,
-    transparent 0 5px,
-    rgba(145, 158, 164, 0.30) 5px 6px,
-    transparent 6px 10px
+  height: 10px;
+  border: 1px solid rgba(145, 158, 164, .24);
+  border-radius: 999px;
+  background-color: rgba(145, 158, 164, .018);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 39%,
+    rgba(0, 200, 255, .12) 46%,
+    rgba(0, 200, 255, .95) 50%,
+    rgba(164, 244, 255, .7) 51%,
+    rgba(0, 200, 255, .12) 55%,
+    transparent 62%,
+    transparent 100%
   );
+  background-repeat: no-repeat;
+  background-position: 100% 50%;
+  background-size: 220% 2px;
+  box-shadow: 0 0 12px rgba(0, 200, 255, .035), inset 0 0 8px rgba(0, 200, 255, .025);
   content: '';
   pointer-events: none;
+  animation: section-rail-sweep 5.5s linear infinite;
 }
 
-.landing-main + .footer {
-  position: relative;
-}
-
+.landing-main + .footer,
 .landing-main > section + section {
   position: relative;
 }
 
-@media (prefers-reduced-motion: no-preference) {
+@keyframes section-rail-sweep {
+  0% { background-position: 100% 50%; }
+  100% { background-position: -120% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
   .landing-main > section + section::before,
   .landing-main + .footer::before {
-    background-size: 14px 14px;
+    animation: none;
+    background-position: 50% 50%;
   }
 }

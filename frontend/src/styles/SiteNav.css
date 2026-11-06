@@ -148,6 +148,7 @@
 .api-warming { --status-color: #edbd63; }
 .api-checking { --status-color: #79c8f0; }
 .api-offline, .api-unauthorized { --status-color: #ff7777; }
+.api-misconfigured { --status-color: #edbd63; }
 
 .api-status-orbit {
   position: relative;
