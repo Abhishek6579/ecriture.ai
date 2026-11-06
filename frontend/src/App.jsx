@@ -46,6 +46,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/recognize" element={<Recognize />} />
+        <Route path="/recognition" element={<Recognize />} />
         <Route path="/architecture" element={<Architecture />} />
         <Route path="/process" element={<Architecture />} />
       </Routes>

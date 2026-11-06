@@ -15,10 +15,12 @@ import {
 } from 'lucide-react';
 import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
+import LetterGlitch from '../components/LetterGlitch.jsx';
 import { recognizeImage } from '../services/ocrService.js';
 import '../styles/Recognize.css';
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
+const LETTER_GLITCH_COLORS = ['#ffffff', '#61dca3'];
 
 const ACCEPTED_TYPES = [
   'image/jpeg',
@@ -145,6 +147,15 @@ export default function Recognize() {
       <Navbar />
 
       <main className="recognize-page">
+        <div className="recognize-letter-glitch" aria-hidden="true">
+          <LetterGlitch
+            glitchColors={LETTER_GLITCH_COLORS}
+            glitchAmount={0.5}
+            speed={1}
+            flow={0.5}
+            clickEffect="tear"
+          />
+        </div>
         <section className="recognize-heading scroll-reveal">
           <div className="recognize-eyebrow">
             <span className="recognize-status-dot" />

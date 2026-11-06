@@ -6,11 +6,33 @@
   --recognize-text: #f1f1f1;
   --recognize-accent: #00c8ff;
 
+  position: relative;
+  isolation: isolate;
   min-height: 100vh;
   padding: 76px 5% 32px;
   background: var(--recognize-bg);
   color: var(--recognize-text);
   font-family: inherit;
+}
+
+.recognize-letter-glitch {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 600px;
+  overflow: hidden;
+  opacity: 0.5;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
+}
+
+.recognize-page > section,
+.recognize-page > .preservation-note {
+  position: relative;
+  z-index: 1;
 }
 
 .recognize-page *,
@@ -556,4 +578,21 @@
 .camera-button {
   min-height: 42px;
   padding: 0 15px;
+}
+
+:root[data-theme='light'] .recognize-letter-glitch {
+  opacity: 0.3;
+  mix-blend-mode: normal;
+}
+
+:root[data-theme='dark'] .recognize-letter-glitch {
+  opacity: 0.42;
+  mix-blend-mode: screen;
+}
+
+@media (max-width: 760px) {
+  .recognize-letter-glitch {
+    height: 500px;
+    opacity: 0.25;
+  }
 }
