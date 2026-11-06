@@ -331,7 +331,7 @@ function ProjectIntroduction() {
         </div>
 
         <Link to="/recognize" className="project-link">
-          <span>EXPLORE ECRITURE.AI</span>
+          <ScrambleText text="EXPLORE ECRITURE.AI" />
           <ArrowUpRight size={18} />
         </Link>
       </div>

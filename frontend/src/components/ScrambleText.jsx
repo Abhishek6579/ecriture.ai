@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-';
+const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-/<>[]{}';
+
+function randomGlyph() {
+  return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+}
 
 export default function ScrambleText({ text, className = '' }) {
   const [display, setDisplay] = useState(text);
@@ -10,25 +14,24 @@ export default function ScrambleText({ text, className = '' }) {
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
 
     window.clearInterval(timer.current);
-    let progress = 0;
     const characters = Array.from(text);
-    setDisplay(characters.map((character) => (
-      character === ' ' ? ' ' : GLYPHS[Math.floor(Math.random() * GLYPHS.length)]
-    )).join(''));
+    let revealed = 0;
+
+    // Scramble the complete string at once; do not treat words independently.
+    setDisplay(characters.map(() => randomGlyph()).join(''));
 
     timer.current = window.setInterval(() => {
-      progress += 1;
-      setDisplay(characters.map((character, index) => {
-        if (character === ' ' || index < progress) return character;
-        return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-      }).join(''));
+      revealed = Math.min(revealed + 1, characters.length);
+      setDisplay(characters.map((character, index) => (
+        index < revealed ? character : randomGlyph()
+      )).join(''));
 
-      if (progress >= characters.length) {
+      if (revealed >= characters.length) {
         window.clearInterval(timer.current);
         timer.current = null;
         setDisplay(text);
       }
-    }, 24);
+    }, 25);
   }, [text]);
 
   useEffect(() => {
@@ -37,7 +40,7 @@ export default function ScrambleText({ text, className = '' }) {
   }, [text]);
 
   return (
-    <span className={className} aria-label={text} onMouseEnter={runScramble} onFocus={runScramble}>
+    <span className={className} aria-label={text} onMouseEnter={runScramble}>
       <span aria-hidden="true">{display}</span>
     </span>
   );
