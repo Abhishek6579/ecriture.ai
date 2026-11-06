@@ -32,22 +32,27 @@ The core recognition engine (`backend/ocr_engine.py`) processes full-page docume
 ```text
 ecriture.ai/
 ├── backend/
-│   ├── models/                  # Git-ignored directory containing local model weights
-│   │   ├── DB_TD500_resnet50.onnx
-│   │   └── trocr-small-stage1/
-│   ├── download_detector.py     # Provisioning script for DBNet and TrOCR weights
-│   ├── main.py                  # FastAPI application and endpoint definitions
-│   ├── ocr_engine.py            # FullPageOCR pipeline implementation
-│   └── requirements.txt         # Python dependencies
-├── src/
-│   ├── assets/                  # Static visual assets
-│   ├── components/              # Reusable UI components (Navbar, Footer, UnderTheHood)
-│   ├── pages/                   # Application views (Home, Docs, Features)
-│   ├── styles/                  # Component and global stylesheets
-│   ├── App.jsx                  # Root component
-│   └── main.jsx                 # React DOM entry point
-├── index.html
-├── package.json
+│   ├── models/                  # Git-ignored DBNet and TrOCR model weights
+│   ├── main.py                  # Authenticated FastAPI endpoints
+│   ├── ocr_engine.py            # FullPageOCR: detection, geometry, filtering, recognition
+│   ├── preprocess.py            # CLAHE image preprocessing
+│   ├── download_detector.py     # Model provisioning
+│   └── .env.example             # Local API key and CORS configuration
+├── frontend/
+│   ├── public/                  # Static assets and favicon
+│   ├── src/
+│   │   ├── components/          # Navbar, spotlight, scramble text, pipeline explorer
+│   │   ├── context/             # Theme and API health state
+│   │   ├── pages/               # Home, Recognition, Architecture
+│   │   ├── services/            # OCR API client
+│   │   ├── styles/              # Page, theme, and responsive styles
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── .env.example
+│   ├── vercel.json              # SPA route fallback for direct page visits
+│   └── package.json
+├── ocr/                         # Supporting capture and image-stitching utilities
+├── trocr-base-printed/          # Printed-text TrOCR helper assets
 └── README.md
 ```
 
@@ -65,10 +70,21 @@ ecriture.ai/
 
 ### 1. Environment and Dependencies
 
-Navigate to the `backend` directory, create a virtual environment, and install the pinned dependencies:
+Navigate to the `backend` directory and create a local `.env` file from the supplied template. The `API_KEY` value must match `VITE_API_KEY` in `frontend/.env.local` for a local browser demo.
+
+Windows PowerShell:
+
+```powershell
+cd backend
+Copy-Item .env.example .env
+python -m venv .venv
+```
+
+macOS / Linux:
 
 ```bash
 cd backend
+cp .env.example .env
 python -m venv .venv
 ```
 
@@ -116,6 +132,8 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 - **Interactive OpenAPI Docs**: `http://localhost:8000/docs`
 - **Health Check**: `http://localhost:8000/health`
 
+The `/health` and `/ocr` endpoints require the `X-API-Key` header. Set `ALLOWED_ORIGINS` to the frontend origin(s) to permit browser requests. Keep real API keys out of version control. A key with a `VITE_` prefix is embedded in frontend assets and is not a production secret; use a server-side proxy for public deployments.
+
 ### 4. Backend Configuration
 
 The OCR engine and FastAPI server can be configured via environment variables:
@@ -130,17 +148,38 @@ The OCR engine and FastAPI server can be configured via environment variables:
 | `MIN_CROP_STD` | `12.0` | Minimum grayscale standard deviation required to pass a crop to TrOCR. |
 | `TORCH_NUM_THREADS` | `2` | Number of CPU threads allocated to PyTorch intra-op parallelism. |
 | `MAX_UPLOAD_BYTES` | `15728640` | Maximum allowed file upload size in bytes (15 MB). |
+| `API_KEY` | Required | Shared development key checked through the `X-API-Key` header. |
+| `ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:3000` | Comma-separated browser origins permitted by CORS. |
 
 ---
 
 ## Frontend Setup
 
-From the repository root, install the Node.js dependencies and start the Vite development server:
+The React application lives in `frontend/`. Install and run it from that directory:
 
-```bash
+Windows PowerShell:
+
+```powershell
+cd frontend
 npm install
+Copy-Item .env.example .env.local
 npm run dev
 ```
+
+macOS / Linux:
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Set `VITE_API_URL` to the FastAPI origin and `VITE_API_KEY` to the same value as the backend's `API_KEY`. Add the frontend's origin to the backend `ALLOWED_ORIGINS` comma-separated list so browser CORS checks succeed. The API health indicator calls the authenticated `GET /health` endpoint and distinguishes a connected API, a warming model, an offline service, and a missing/invalid key. The indicator is clickable for a manual recheck and polls automatically while the application is open.
+
+**Deployment security:** Vite embeds variables prefixed with `VITE_` in the browser bundle. Do not treat `VITE_API_KEY` as a secret in a public deployment. For production, put the OCR API behind a server-side proxy or authenticated application backend rather than shipping a shared API key to every browser.
+
+The UI includes a `/architecture` route with an interactive, source-aligned breakdown of the DBNet → crop rectification → TrOCR inference pipeline. Theme preference is saved locally; the Threadpool-style cursor spotlight, scramble/scan animations, and scroll reveals respect reduced-motion settings. When deploying on Vercel, set the project root directory to `frontend` so its SPA rewrite configuration is applied.
 
 Available scripts in `package.json`:
 
@@ -196,9 +235,8 @@ Contributions should focus on modular, well-tested improvements to either the in
 ### Current Engineering Tasks
 
 - **Frontend Client Integration**:
-  - Implement the `/recognize` route (`Navbar.jsx` and `Footer.jsx` reference `/recognize`) with an image upload interface connected to `POST /ocr`.
-  - Populate the placeholder page modules (`src/pages/Docs.jsx`, `src/pages/Features.jsx`) and shared UI components (`src/components/Button.jsx`).
-  - Wire `ReactRouter` in `src/App.jsx` to handle navigation across `/`, `/recognize`, and `/about`.
+  - Extend the recognition workspace with additional document layouts and export formats.
+  - Add multi-column reading-order analysis and benchmark handwritten checkpoints before making handwriting-recognition claims.
 - **OCR Pipeline Enhancements**:
   - **Layout Analysis**: Extend `FullPageOCR._group_reading_rows` in `backend/ocr_engine.py` to handle multi-column document layouts rather than assuming single-column reading order.
   - **Handwriting Checkpoints**: Benchmark `microsoft/trocr-base-handwritten` and `microsoft/trocr-large-handwritten` against `trocr-small-stage1` for cursive and unconstrained handwritten inputs.
@@ -208,5 +246,5 @@ Contributions should focus on modular, well-tested improvements to either the in
 
 1. Fork the repository and create a feature branch from `main`.
 2. Ensure the backend runs cleanly with `uvicorn main:app` and verify inference via `/ocr` when modifying `backend/`.
-3. Run `npm run lint` and `npm run build` in the root directory to verify zero linting or bundling errors when modifying `src/`.
+3. Run `npm run lint` and `npm run build` from `frontend/` to verify the client after modifying `frontend/src/`.
 4. Keep commits atomic and open a pull request detailing the technical changes and any benchmark or latency impacts.

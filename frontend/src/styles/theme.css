@@ -5,6 +5,8 @@
   --muted-2: #777f83;
   --grid-line: #292f32;
   --status-green: #5bd7a1;
+  --dot-base: rgba(164, 175, 180, .22);
+  --dot-highlight: #d5dfe3;
   color-scheme: dark;
 }
 
@@ -22,6 +24,8 @@
   --yellow: #986d21;
   --grid-line: #d8e0e3;
   --status-green: #16885c;
+  --dot-base: rgba(76, 91, 98, .22);
+  --dot-highlight: #26383f;
   color-scheme: light;
 }
 
@@ -29,45 +33,49 @@ html, body, #root { min-height: 100%; }
 html { background: var(--bg); transition: background-color .25s ease, color .25s ease; }
 body { color: var(--text); background: var(--bg); transition: color .25s ease, background-color .25s ease; }
 
-/* One continuous Threadpool-style cursor glow across the page background. */
+/* Monochrome Threadpool-style dot field: no square grid and no coloured halo. */
 html, body { background-color: var(--bg); }
 body {
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--muted-2) 28%, transparent) .75px, transparent .9px);
+  background-image: radial-gradient(circle, var(--dot-base) .8px, transparent 1.05px);
   background-size: 22px 22px;
 }
 body::before {
   position: fixed;
-  z-index: 2;
+  z-index: 0;
   inset: 0;
   pointer-events: none;
   content: '';
   opacity: var(--pointer-glow-opacity, 0);
-  background: radial-gradient(560px circle at var(--pointer-x, 50vw) var(--pointer-y, 25vh), color-mix(in srgb, var(--cyan) 13%, transparent), transparent 72%);
+  background-image: radial-gradient(circle, var(--dot-highlight) 1.05px, transparent 1.4px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(circle 560px at var(--pointer-x, 50vw) var(--pointer-y, 25vh), rgba(0, 0, 0, .96) 0%, rgba(0, 0, 0, .72) 42%, transparent 100%);
+  mask-image: radial-gradient(circle 560px at var(--pointer-x, 50vw) var(--pointer-y, 25vh), rgba(0, 0, 0, .96) 0%, rgba(0, 0, 0, .72) 42%, transparent 100%);
   transition: opacity .9s ease;
 }
 #root { position: relative; z-index: 1; }
-/* Spotlight is global now; cards remain visually unchanged on hover. */
+/* Keep the pointer-lit dot field continuous behind every section, not attached to cards. */
 .spotlight-card::before { display: none !important; }
 .spotlight-card:hover { border-color: var(--border); }
 .spotlight-card > * { position: relative; z-index: 1; }
+.hero-grid-bg, .architecture-hero-grid { display: none !important; }
 
 /* Quiet motion cues drawn from the Sketch2Shape interface. */
 .hero-visual { animation: visual-float 8s ease-in-out infinite; }
 .visual-canvas { overflow: hidden; }
 .visual-canvas::after {
   position: absolute;
-  top: 0;
-  right: 13px;
-  left: 13px;
-  height: 2px;
+  top: 13px;
+  bottom: 13px;
+  left: 0;
+  width: 2px;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent, var(--cyan), #8b83ff, transparent);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--cyan) 60%, transparent);
+  background: linear-gradient(180deg, transparent, var(--cyan) 18%, var(--cyan) 82%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--cyan) 48%, transparent);
   content: '';
   animation: visual-scan 6s ease-in-out infinite;
 }
 @keyframes visual-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-@keyframes visual-scan { 0% { top: 3%; opacity: 0; } 8% { opacity: .85; } 65% { top: 94%; opacity: .65; } 75%, 100% { top: 94%; opacity: 0; } }
+@keyframes visual-scan { 0% { left: 4%; opacity: 0; } 8% { opacity: .85; } 65% { left: 96%; opacity: .65; } 75%, 100% { left: 96%; opacity: 0; } }
 
 /* Light theme: keep contrast high while retaining the dark technical illustrations. */
 :root[data-theme='light'] .site-nav { background: rgba(244, 248, 249, .68); border-bottom-color: rgba(155, 174, 181, .48); box-shadow: 0 8px 28px rgba(33, 57, 66, .045); }
@@ -78,7 +86,6 @@ body::before {
 :root[data-theme='light'] .api-status-button { background: color-mix(in srgb, var(--status-color) 8%, white); }
 :root[data-theme='light'] .theme-toggle,
 :root[data-theme='light'] .site-menu-toggle { background: #fff; }
-:root[data-theme='light'] .hero-grid-bg { opacity: .42; background-image: linear-gradient(#d9e1e4 1px, transparent 1px), linear-gradient(90deg, #d9e1e4 1px, transparent 1px); }
 :root[data-theme='light'] .hero h1 .hero-scramble { background: linear-gradient(100deg, #68747a, #087f9d 75%); background-clip: text; -webkit-background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 :root[data-theme='light'] .hero-description,
 :root[data-theme='light'] .section-description,

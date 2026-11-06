@@ -77,8 +77,10 @@
   height: 75%;
   border-style: dashed;
   border-color: #383838;
-  animation: hood-rotate 90s linear infinite;
+  animation: hood-rotate 2s linear infinite;
 }
+
+.hood-orbit.orbit-paused .orbit-outer { animation-play-state: paused; }
 
 .orbit-inner {
   width: 49%;
@@ -194,11 +196,6 @@
   background: #0b181d;
   color: var(--cyan);
   box-shadow: 0 0 28px #00c8ff12;
-}
-
-.node-letter {
-  font-family: var(--mono);
-  font-size: 9px;
 }
 
 .orbit-caption {

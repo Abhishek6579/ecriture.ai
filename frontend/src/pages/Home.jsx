@@ -237,11 +237,11 @@ function IntroSection() {
 
           <div className="hero-buttons">
             <a href="#system" className="button-primary">
-              EXPLORE THE SYSTEM <ArrowUpRight size={15} />
+              <ScrambleText text="EXPLORE THE SYSTEM" /> <ArrowUpRight size={15} />
             </a>
 
             <Link to="/recognize" className="button-secondary">
-              TRY RECOGNITION <ArrowUpRight size={15} />
+              <ScrambleText text="TRY RECOGNITION" /> <ArrowUpRight size={15} />
             </Link>
           </div>
 

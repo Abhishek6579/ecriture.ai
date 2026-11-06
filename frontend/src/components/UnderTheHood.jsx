@@ -12,7 +12,6 @@ import '../styles/UnderTheHood.css';
 
 const pipelineSteps = [
   {
-    letter: 'A',
     number: '01',
     title: 'Image input',
     short: 'UPLOAD',
@@ -21,7 +20,6 @@ const pipelineSteps = [
     icon: ImageIcon,
   },
   {
-    letter: 'B',
     number: '02',
     title: 'CLAHE preprocessing',
     short: 'CONTRAST',
@@ -30,7 +28,6 @@ const pipelineSteps = [
     icon: ScanIcon,
   },
   {
-    letter: 'C',
     number: '03',
     title: 'DBNet detection',
     short: 'DETECTION',
@@ -39,7 +36,6 @@ const pipelineSteps = [
     icon: BrainIcon,
   },
   {
-    letter: 'D',
     number: '04',
     title: 'Line rectification',
     short: 'CROP / ORDER',
@@ -48,7 +44,6 @@ const pipelineSteps = [
     icon: CheckIcon,
   },
   {
-    letter: 'E',
     number: '05',
     title: 'TrOCR output',
     short: 'RECOGNITION',
@@ -68,6 +63,8 @@ const nodePositions = [
 
 export default function UnderTheHood() {
   const [currentStep, setCurrentStep] = useStageState(0);
+  const [orbitPaused, setOrbitPaused] = useStageState(false);
+  const orbitPausedRef = useRef(false);
   const orbitRef = useRef(null);
 
   useEffect(() => {
@@ -77,7 +74,9 @@ export default function UnderTheHood() {
     let interval = null;
     const start = () => {
       if (interval || !visible || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-      interval = window.setInterval(() => setCurrentStep((step) => (step + 1) % pipelineSteps.length), 3200);
+      interval = window.setInterval(() => {
+        if (!orbitPausedRef.current) setCurrentStep((step) => (step + 1) % pipelineSteps.length);
+      }, 2000);
     };
     const stop = () => { if (interval) window.clearInterval(interval); interval = null; };
     const observer = new IntersectionObserver(([entry]) => {
@@ -113,7 +112,7 @@ export default function UnderTheHood() {
         </div>
 
         <div className="hood-layout">
-          <div className="hood-orbit" ref={orbitRef}>
+          <div className={`hood-orbit${orbitPaused ? ' orbit-paused' : ''}`} ref={orbitRef}>
             <div className="orbit orbit-outer" />
             <div className="orbit orbit-inner" />
 
@@ -144,7 +143,7 @@ export default function UnderTheHood() {
 
               return (
                 <button
-                  key={step.letter}
+                  key={step.number}
                   type="button"
                   className={`orbit-node ${
                     currentStep === stepIndex
@@ -152,17 +151,15 @@ export default function UnderTheHood() {
                       : ''
                   }`}
                   style={nodePositions[stepIndex]}
-                  onMouseEnter={() => setCurrentStep(stepIndex)}
-                  onFocus={() => setCurrentStep(stepIndex)}
+                  onPointerEnter={() => { orbitPausedRef.current = true; setOrbitPaused(true); setCurrentStep(stepIndex); }}
+                  onPointerLeave={() => { orbitPausedRef.current = false; setOrbitPaused(false); }}
+                  onFocus={() => { orbitPausedRef.current = true; setOrbitPaused(true); setCurrentStep(stepIndex); }}
+                  onBlur={() => { orbitPausedRef.current = false; setOrbitPaused(false); }}
                   onClick={() => setCurrentStep(stepIndex)}
-                  aria-label={`View ${step.title}`}
+                  aria-label={`View stage ${step.number}: ${step.title}`}
                   aria-pressed={currentStep === stepIndex}
                 >
                   <NodeIcon size={19} strokeWidth={1.5} />
-
-                  <span className="node-letter">
-                    {step.letter}
-                  </span>
                 </button>
               );
             })}
@@ -209,7 +206,7 @@ export default function UnderTheHood() {
                 <span className="detail-label">COMPONENT</span>
 
                 <span className="detail-value">
-                  {stepInfo.letter} / {stepInfo.short}
+                  {stepInfo.short}
                 </span>
               </div>
 
@@ -219,7 +216,7 @@ export default function UnderTheHood() {
             <div className="detail-progress">
               {pipelineSteps.map((step, stepIndex) => (
                 <button
-                  key={step.letter}
+                  key={step.number}
                   type="button"
                   className={
                     stepIndex === currentStep
