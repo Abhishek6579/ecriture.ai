@@ -144,7 +144,7 @@ export default function Recognize() {
       <Navbar />
 
       <main className="recognize-page">
-        <section className="recognize-heading">
+        <section className="recognize-heading scroll-reveal">
           <div className="recognize-eyebrow">
             <span className="recognize-status-dot" />
             DIGITAL PRESERVATION / OCR WORKSPACE
@@ -163,7 +163,7 @@ export default function Recognize() {
           </p>
         </section>
 
-        <section className="recognize-workspace">
+        <section className="recognize-workspace scroll-reveal">
           <div className="workspace-topbar">
             <div>
               <span className="workspace-index">WORKSPACE / 01</span>
@@ -176,7 +176,7 @@ export default function Recognize() {
           </div>
 
           <div className="recognize-grid">
-            <section className="document-panel">
+            <section className="document-panel spotlight-card">
               <div className="panel-heading">
                 <div className="panel-title">
                   <ImageIcon size={17} />
@@ -294,7 +294,7 @@ export default function Recognize() {
               </div>
             </section>
 
-            <section className="output-panel">
+            <section className="output-panel spotlight-card">
               <div className="panel-heading">
                 <div className="panel-title">
                   <FileText size={17} />

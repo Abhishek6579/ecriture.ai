@@ -1,5 +1,5 @@
 
-import { useState as useStageState } from 'react';
+import { useEffect, useRef, useState as useStageState } from 'react';
 import {
   Image as ImageIcon,
   ScanLine as ScanIcon,
@@ -12,48 +12,43 @@ import '../styles/UnderTheHood.css';
 
 const pipelineSteps = [
   {
-    letter: 'A',
     number: '01',
     title: 'Image input',
-    short: 'INPUT',
+    short: 'UPLOAD',
     description:
-      'A handwritten page enters the system as an image. Image quality and legibility can influence recognition.',
+      'A JPG, PNG, or WebP page image enters the FastAPI service as multipart form data. The API key and 15 MB upload limit are checked before image decoding.',
     icon: ImageIcon,
   },
   {
-    letter: 'B',
     number: '02',
-    title: 'Preprocessing',
-    short: 'PREP',
+    title: 'CLAHE preprocessing',
+    short: 'CONTRAST',
     description:
-      'The image may be resized, denoised, binarized, or normalized to prepare it for the recognition model.',
+      'OpenCV converts the page to grayscale, applies CLAHE, and restores a three-channel BGR image. The default clip limit is 5.0 with a brightness offset of 30.',
     icon: ScanIcon,
   },
   {
-    letter: 'C',
     number: '03',
-    title: 'AI recognition',
-    short: 'MODEL',
+    title: 'DBNet detection',
+    short: 'DETECTION',
     description:
-      'A trained handwriting recognition model analyzes the input and predicts a sequence of characters or text.',
+      'OpenCV DNN runs the DB_TD500 ResNet-50 detector at 736 × 736 and returns quadrilateral polygons around text regions.',
     icon: BrainIcon,
   },
   {
-    letter: 'D',
     number: '04',
-    title: 'Text refinement',
-    short: 'REFINE',
+    title: 'Line rectification',
+    short: 'CROP / ORDER',
     description:
-      'The predicted text can be formatted and checked. Additional correction should only be applied if supported by the system.',
+      'Polygons are grouped into reading rows, ordered left to right, and perspective-warped into horizontal crops. Extremely wide crops are split and near-uniform false positives are filtered out.',
     icon: CheckIcon,
   },
   {
-    letter: 'E',
     number: '05',
-    title: 'Digital output',
-    short: 'OUTPUT',
+    title: 'TrOCR output',
+    short: 'RECOGNITION',
     description:
-      'The recognized text is presented digitally so it can be reviewed, copied, or used in other applications.',
+      'TrOCR recognises the rectified line images in batches. The API returns the filename, extracted text, and character count for review, copying, or download.',
     icon: TextIcon,
   },
 ];
@@ -67,13 +62,36 @@ const nodePositions = [
 ];
 
 export default function UnderTheHood() {
-  const [currentStep, setCurrentStep] = useStageState(2);
+  const [currentStep, setCurrentStep] = useStageState(0);
+  const [orbitPaused, setOrbitPaused] = useStageState(false);
+  const orbitPausedRef = useRef(false);
+  const orbitRef = useRef(null);
+
+  useEffect(() => {
+    const orbit = orbitRef.current;
+    if (!orbit) return undefined;
+    let visible = false;
+    let interval = null;
+    const start = () => {
+      if (interval || !visible || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+      interval = window.setInterval(() => {
+        if (!orbitPausedRef.current) setCurrentStep((step) => (step + 1) % pipelineSteps.length);
+      }, 2000);
+    };
+    const stop = () => { if (interval) window.clearInterval(interval); interval = null; };
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) start(); else stop();
+    }, { threshold: 0.35 });
+    observer.observe(orbit);
+    return () => { stop(); observer.disconnect(); };
+  }, []);
 
   const stepInfo = pipelineSteps[currentStep];
   const StepIcon = stepInfo.icon;
 
   return (
-    <section className="hood-section" id="under-the-hood">
+    <section className="hood-section scroll-reveal" id="under-the-hood">
       <div className="container">
         <div className="hood-heading">
           <div>
@@ -82,21 +100,19 @@ export default function UnderTheHood() {
             </span>
 
             <h2>
-              Every stroke.
+              Every line.
               <br />
               <span>Every step.</span>
             </h2>
           </div>
 
           <p>
-            From a handwritten image to machine-readable text.
-            Explore the stages behind an AI handwriting recognition
-            pipeline.
+            From a page image to machine-readable text. Explore the implemented DBNet detection, crop rectification, and TrOCR recognition stages.
           </p>
         </div>
 
         <div className="hood-layout">
-          <div className="hood-orbit">
+          <div className={`hood-orbit${orbitPaused ? ' orbit-paused' : ''}`} ref={orbitRef}>
             <div className="orbit orbit-outer" />
             <div className="orbit orbit-inner" />
 
@@ -110,19 +126,11 @@ export default function UnderTheHood() {
               </div>
 
               <h3>
-                {currentStep === 2 ? (
-                  <>
-                    Ecriture<span>.ai</span>
-                  </>
-                ) : (
-                  stepInfo.title
-                )}
+                {stepInfo.title}
               </h3>
 
               <p>
-                {currentStep === 2
-                  ? 'Handwriting intelligence'
-                  : stepInfo.description}
+                {stepInfo.description}
               </p>
 
               <span className="center-flow">
@@ -135,7 +143,7 @@ export default function UnderTheHood() {
 
               return (
                 <button
-                  key={step.letter}
+                  key={step.number}
                   type="button"
                   className={`orbit-node ${
                     currentStep === stepIndex
@@ -143,17 +151,15 @@ export default function UnderTheHood() {
                       : ''
                   }`}
                   style={nodePositions[stepIndex]}
-                  onMouseEnter={() => setCurrentStep(stepIndex)}
-                  onFocus={() => setCurrentStep(stepIndex)}
+                  onPointerEnter={() => { orbitPausedRef.current = true; setOrbitPaused(true); setCurrentStep(stepIndex); }}
+                  onPointerLeave={() => { orbitPausedRef.current = false; setOrbitPaused(false); }}
+                  onFocus={() => { orbitPausedRef.current = true; setOrbitPaused(true); setCurrentStep(stepIndex); }}
+                  onBlur={() => { orbitPausedRef.current = false; setOrbitPaused(false); }}
                   onClick={() => setCurrentStep(stepIndex)}
-                  aria-label={`View ${step.title}`}
+                  aria-label={`View stage ${step.number}: ${step.title}`}
                   aria-pressed={currentStep === stepIndex}
                 >
                   <NodeIcon size={19} strokeWidth={1.5} />
-
-                  <span className="node-letter">
-                    {step.letter}
-                  </span>
                 </button>
               );
             })}
@@ -167,7 +173,7 @@ export default function UnderTheHood() {
             </span>
           </div>
 
-          <div className="hood-details" aria-live="polite">
+          <div className="hood-details spotlight-card" aria-live="polite">
             <div className="detail-top">
               <span>{stepInfo.number} / 05</span>
 
@@ -200,7 +206,7 @@ export default function UnderTheHood() {
                 <span className="detail-label">COMPONENT</span>
 
                 <span className="detail-value">
-                  {stepInfo.letter} / {stepInfo.short}
+                  {stepInfo.short}
                 </span>
               </div>
 
@@ -210,7 +216,7 @@ export default function UnderTheHood() {
             <div className="detail-progress">
               {pipelineSteps.map((step, stepIndex) => (
                 <button
-                  key={step.letter}
+                  key={step.number}
                   type="button"
                   className={
                     stepIndex === currentStep
@@ -227,11 +233,11 @@ export default function UnderTheHood() {
 
         <div className="hood-footnote">
           <span>
-            FIG. 005 — CONCEPTUAL SYSTEM ARCHITECTURE
+            FIG. 005 — IMPLEMENTED OCR PIPELINE
           </span>
 
           <span>
-            INPUT / PROCESSING / INFERENCE / OUTPUT
+            OPENCV / DBNET / TrOCR / FASTAPI
           </span>
         </div>
       </div>

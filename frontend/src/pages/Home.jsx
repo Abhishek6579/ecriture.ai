@@ -1,24 +1,22 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowDown,
-  ArrowRight,
   ArrowUpRight,
   ScanText,
   Cpu,
   FileText,
   Activity,
-  Menu,
-  X,
   MoveUpRight,
 } from 'lucide-react';
 import '../styles/Home.css';
 import UnderTheHood from '../components/UnderTheHood.jsx';
+import ScrambleText from '../components/ScrambleText.jsx';
+import Navbar from '../components/Navbar.jsx';
 
 // const sectionLinks = {
 //   '01': '#top',
 //   '02': '#system',
-//   '03': '#process',
+//   '03': '/process',
 //   '04': '#project',
 // };
 
@@ -26,18 +24,18 @@ const projectModules = [
   {
     number: '01',
     icon: ScanText,
-    title: 'Handwriting recognition',
+    title: 'Document text recognition',
     tag: 'IMAGE / TEXT',
     description:
-      'Explore how handwritten marks can be translated into machine-readable digital text.',
+      'Page images are detected, segmented into line crops, and decoded into machine-readable text.',
   },
   {
     number: '02',
     icon: Cpu,
-    title: 'Artificial intelligence',
+    title: 'OCR inference models',
     tag: 'MODEL / INFERENCE',
     description:
-      'Discover the machine learning techniques behind the handwriting recognition system.',
+      'DBNet locates text regions while TrOCR recognises the rectified line images.',
   },
   {
     number: '03',
@@ -45,7 +43,7 @@ const projectModules = [
     title: 'Digital transformation',
     tag: 'INPUT / OUTPUT',
     description:
-      'Understand the transition from handwritten documents to structured digital information.',
+      'Turn document images into searchable, shareable digital text.',
   },
   {
     number: '04',
@@ -57,101 +55,9 @@ const projectModules = [
   },
 ];
 
-const processStages = [
-  {
-    number: '01',
-    title: 'Image acquisition',
-    description:
-      'A handwritten page enters the system as a digital image.',
-    label: 'VISUAL INPUT',
-  },
-  {
-    number: '02',
-    title: 'Image processing',
-    description:
-      'The input can be prepared and normalized for the recognition model.',
-    label: 'PREPROCESSING',
-  },
-  {
-    number: '03',
-    title: 'Model inference',
-    description:
-      'A trained recognition model analyzes the handwriting and predicts text.',
-    label: 'AI INFERENCE',
-  },
-  {
-    number: '04',
-    title: 'Text output',
-    description:
-      'The predicted text can be presented for review and further use.',
-    label: 'DIGITAL OUTPUT',
-  },
-];
-
-function getStageClass(isActive, activeClass) {
-  return isActive ? activeClass : '';
-}
-
-function SiteNavigation() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  function closeMenu() {
-    setMenuOpen(false);
-  }
-
-  return (
-    <header className="navbar" id="top">
-      <div className="navbar-inner">
-        <a href="#top" className="wordmark" onClick={closeMenu}>
-          <span className="wordmark-symbol">e.</span>
-          <span>
-            ecriture<span className="cyan">.ai</span>
-          </span>
-        </a>
-
-        {/* <div className="nav-index" aria-label="Page sections">
-          {Object.entries(sectionLinks).map(([number, link]) => (
-            <a href={link} key={number}>
-              {number}
-            </a>
-          ))}
-        </div> */}
-
-        <nav
-          className={`nav-links ${
-            getStageClass(menuOpen, 'nav-links-open')
-          }`}
-        >
-          <a href="#system" onClick={closeMenu}>SYSTEM</a>
-          <a href="#process" onClick={closeMenu}>PROCESS</a>
-          <a href="#project" onClick={closeMenu}>PROJECT</a>
-
-          <Link to="/recognize" onClick={closeMenu}>
-            RECOGNITION
-          </Link>
-
-          <a className="nav-cta" href="#system" onClick={closeMenu}>
-            EXPLORE SYSTEM <ArrowUpRight size={13} />
-          </a>
-        </nav>
-
-        <button
-          className="menu-toggle"
-          type="button"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          {menuOpen ? <X size={19} /> : <Menu size={19} />}
-        </button>
-      </div>
-    </header>
-  );
-}
-
 function RecognitionIllustration() {
   return (
-    <div className="hero-visual">
+    <div className="hero-visual spotlight-card">
       <div className="visual-header">
         <span>FIG. 001 / RECOGNITION STUDY</span>
         <span className="visual-live">
@@ -167,7 +73,7 @@ function RecognitionIllustration() {
           viewBox="0 0 440 360"
           className="handwriting-svg"
           role="img"
-          aria-label="Abstract visualization of handwriting being converted into digital text"
+          aria-label="Abstract visualization of document text being converted into digital text"
         >
           <defs>
             <pattern
@@ -176,7 +82,7 @@ function RecognitionIllustration() {
               height="18"
               patternUnits="userSpaceOnUse"
             >
-              <circle cx="1" cy="1" r="0.8" fill="#3c3c3c" />
+              <circle cx="1" cy="1" r="0.8" fill="var(--illustration-dots)" />
             </pattern>
 
             <linearGradient id="ink" x1="0" y1="0" x2="1" y2="1">
@@ -192,11 +98,11 @@ function RecognitionIllustration() {
             y="38"
             width="390"
             height="284"
-            fill="#080808"
-            stroke="#303030"
+            fill="var(--illustration-panel)"
+            stroke="var(--illustration-border)"
           />
 
-          <g stroke="#272727" strokeWidth="1">
+          <g stroke="var(--illustration-grid)" strokeWidth="1">
             <path d="M42 95 H398" />
             <path d="M42 151 H398" />
             <path d="M42 207 H398" />
@@ -221,12 +127,12 @@ function RecognitionIllustration() {
             fill="none"
           />
 
-          <g fill="#8b8b8b" fontFamily="monospace" fontSize="8">
-            <text x="42" y="58">HANDWRITTEN INPUT</text>
+          <g fill="var(--illustration-label)" fontFamily="monospace" fontSize="8">
+            <text x="42" y="58">DOCUMENT INPUT</text>
             <text x="276" y="58">PREDICTED OUTPUT</text>
           </g>
 
-          <g stroke="#464646" strokeWidth="1">
+          <g stroke="var(--illustration-lines)" strokeWidth="1">
             <path d="M278 110 H370" />
             <path d="M278 128 H388" />
             <path d="M278 146 H359" />
@@ -243,7 +149,7 @@ function RecognitionIllustration() {
             <circle cx="278" cy="216" r="2.3" />
           </g>
 
-          <g fill="#777" fontFamily="monospace" fontSize="8">
+          <g fill="var(--illustration-label)" fontFamily="monospace" fontSize="8">
             <text x="42" y="298">INPUT / IMAGE DATA</text>
             <text x="276" y="298">OUTPUT / TEXT DATA</text>
           </g>
@@ -279,28 +185,26 @@ function IntroSection() {
         <div className="hero-copy">
           <div className="eyebrow">
             <span className="status-dot" />
-            AI / HANDWRITING RECOGNITION
+            DOCUMENT / TEXT RECOGNITION
           </div>
 
           <h1>
-            Written by hand.
+            Written on a page.
             <br />
-            <span>Understood by AI.</span>
+            <span className="hero-scramble">Understood by AI.</span>
           </h1>
 
           <p className="hero-description">
-            Exploring the space between human writing and machine
-            intelligence. Turning handwritten information into a
-            format the digital world can understand.
+            A full-page OCR system that combines DBNet text detection and TrOCR line recognition to turn document images into digital text.
           </p>
 
           <div className="hero-buttons">
             <a href="#system" className="button-primary">
-              EXPLORE THE SYSTEM <ArrowUpRight size={15} />
+              <ScrambleText text="EXPLORE THE SYSTEM" /> <ArrowUpRight size={15} />
             </a>
 
             <Link to="/recognize" className="button-secondary">
-              TRY RECOGNITION <ArrowUpRight size={15} />
+              <ScrambleText text="TRY RECOGNITION" /> <ArrowUpRight size={15} />
             </Link>
           </div>
 
@@ -326,7 +230,7 @@ function IntroSection() {
 
 function TopicOverview() {
   return (
-    <section className="section system-section" id="system">
+    <section className="section system-section scroll-reveal" id="system">
       <div className="container">
         <div className="system-heading">
           <div>
@@ -339,9 +243,7 @@ function TopicOverview() {
             </h2>
 
             <p className="section-description">
-              Handwriting recognition is more than reading characters.
-              It is a process that connects visual information,
-              learned patterns, and machine-readable output.
+              Document OCR connects visual input, text-region detection, geometric correction, and sequence recognition to produce machine-readable output.
             </p>
           </div>
 
@@ -358,7 +260,7 @@ function TopicOverview() {
             const ModuleIcon = module.icon;
 
             return (
-              <article className="module-card" key={module.number}>
+              <article className="module-card spotlight-card" key={module.number}>
                 <div className="module-top">
                   <span className="mono module-number">
                     {module.number}
@@ -372,10 +274,10 @@ function TopicOverview() {
                   <p>{module.description}</p>
                 </div>
 
-                <a className="module-link" href="#process">
+                <Link className="module-link" to="/process">
                   <span>EXPLORE CONCEPT</span>
                   <MoveUpRight size={15} />
-                </a>
+                </Link>
               </article>
             );
           })}
@@ -385,76 +287,24 @@ function TopicOverview() {
   );
 }
 
-function RecognitionProcess() {
-  const [selectedStage, setSelectedStage] = useState(0);
-  const currentStage = processStages[selectedStage];
-
+function ProcessOverview() {
   return (
-    <section className="section process-section" id="process">
+    <section className="section process-section process-overview scroll-reveal" id="process">
       <div className="container">
         <div className="eyebrow">03 / PROCESS ARCHITECTURE</div>
-
         <div className="process-heading">
           <h2 className="section-title">
-            From handwriting
+            From document image
             <br />
-            to digital understanding.
+            to digital text.
           </h2>
-
-          <p className="section-description">
-            A conceptual look at the steps involved in an AI handwriting
-            recognition pipeline. The exact implementation depends on
-            the model and preprocessing used by the project.
-          </p>
-        </div>
-
-        <div className="process-panel">
-          <div className="stage-list">
-            {processStages.map((stage, index) => (
-              <button
-                type="button"
-                className={`stage-button ${getStageClass(
-                  selectedStage === index,
-                  'stage-active'
-                )}`}
-                key={stage.number}
-                onClick={() => setSelectedStage(index)}
-                aria-pressed={selectedStage === index}
-              >
-                <span className="mono">{stage.number}</span>
-                <span>{stage.title}</span>
-                <ArrowRight size={15} />
-              </button>
-            ))}
-          </div>
-
-          <div className="stage-detail" aria-live="polite">
-            <span className="stage-label">
-              PROCESS STAGE / {currentStage.number}
-            </span>
-
-            <div className="stage-large-number">
-              {currentStage.number}
-            </div>
-
-            <h3>{currentStage.title}</h3>
-            <p>{currentStage.description}</p>
-
-            <div className="stage-bottom">
-              <span>{currentStage.label}</span>
-
-              <div className="stage-progress">
-                {processStages.map((stage, index) => (
-                  <span
-                    key={stage.number}
-                    className={getStageClass(
-                      index <= selectedStage,
-                      'progress-active'
-                    )}
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="process-overview-action">
+            <p className="section-description">
+              Explore the complete DBNet and TrOCR pipeline, including image validation, text detection, geometric correction, crop filtering, and recognition.
+            </p>
+            <Link to="/process" className="process-page-link">
+              EXPLORE THE FULL PIPELINE <ArrowUpRight size={15} />
+            </Link>
           </div>
         </div>
       </div>
@@ -464,7 +314,7 @@ function RecognitionProcess() {
 
 function ProjectIntroduction() {
   return (
-    <section className="project-section" id="project">
+    <section className="project-section scroll-reveal" id="project">
       <div className="container project-layout">
         <div>
           <div className="eyebrow">04 / THE PROJECT</div>
@@ -476,16 +326,14 @@ function ProjectIntroduction() {
           </h2>
 
           <p>
-            An engineering project exploring AI-powered handwriting
-            recognition, its underlying technology, and its practical
-            applications.
+            An engineering project exploring full-page document OCR, its underlying computer vision pipeline, and practical applications.
           </p>
         </div>
 
-        <a href="#top" className="project-link">
+        <Link to="/recognize" className="project-link">
           <span>EXPLORE ECRITURE.AI</span>
           <ArrowUpRight size={18} />
-        </a>
+        </Link>
       </div>
     </section>
   );
@@ -503,17 +351,17 @@ function SiteFooter() {
         </a>
 
         <span className="footer-description">
-          HANDWRITING / INTELLIGENCE / DIGITAL TEXT
+          DOCUMENT OCR / INTELLIGENCE / DIGITAL TEXT
         </span>
 
         <a href="#top" className="back-top">
-          BACK TO TOP ↑
+          <ScrambleText text="BACK TO TOP ↑" />
         </a>
       </div>
 
       <div className="footer-bottom">
-        <span>© {new Date().getFullYear()} ECRITURE.AI</span>
-        <span>AN AI HANDWRITING RECOGNITION PROJECT</span>
+        <span>© {new Date().getFullYear()} ECRITURE.AI · ALL RIGHTS RESERVED</span>
+        <span>A FULL-PAGE DOCUMENT OCR PROJECT</span>
       </div>
     </footer>
   );
@@ -522,12 +370,12 @@ function SiteFooter() {
 export default function HomePage() {
   return (
     <>
-      <SiteNavigation />
+      <Navbar />
 
       <main>
         <IntroSection />
         <TopicOverview />
-        <RecognitionProcess />
+        <ProcessOverview />
         <UnderTheHood />
         <ProjectIntroduction />
       </main>
