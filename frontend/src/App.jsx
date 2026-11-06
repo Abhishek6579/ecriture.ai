@@ -39,9 +39,11 @@ function ScrollRevealObserver() {
 
 
 function App() {
+  const location = useLocation();
+
   return (
     <>
-      <PointerSpotlight />
+      {location.pathname !== '/' && <PointerSpotlight />}
       <ScrollRevealObserver />
       <Routes>
         <Route path="/" element={<Home />} />

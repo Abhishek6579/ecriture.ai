@@ -12,6 +12,7 @@ import '../styles/Home.css';
 import UnderTheHood from '../components/UnderTheHood.jsx';
 import ScrambleText from '../components/ScrambleText.jsx';
 import Navbar from '../components/Navbar.jsx';
+import DotGrid from '../components/DotGrid.jsx';
 
 // const sectionLinks = {
 //   '01': '#top',
@@ -372,7 +373,28 @@ export default function HomePage() {
     <>
       <Navbar />
 
-      <main>
+      <main className="landing-main">
+      <div className="landing-dot-grid" aria-hidden="true">
+        <DotGrid
+          baseColor="#3a3446"
+          activeColor="#06b6d4"
+          shape="circle"
+          dotSize={3}
+          gap={18}
+          proximity={165}
+          strength={1}
+          bounce={0.6}
+          tension={0.4}
+          returnDuration={0.8}
+          shockRadius={320}
+          shockStrength={5}
+          swell={0.8}
+          stretch={0.5}
+          glow={0.5}
+          fade={0}
+          intro={true}
+        />
+      </div>
         <IntroSection />
         <TopicOverview />
         <ProcessOverview />
