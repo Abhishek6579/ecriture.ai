@@ -96,7 +96,7 @@ export default function UnderTheHood() {
         <div className="hood-heading">
           <div>
             <span className="hood-eyebrow">
-              05 / UNDER THE HOOD
+              04 / UNDER THE HOOD
             </span>
 
             <h2>

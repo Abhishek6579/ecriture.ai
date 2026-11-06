@@ -13,6 +13,7 @@ import UnderTheHood from '../components/UnderTheHood.jsx';
 import ScrambleText from '../components/ScrambleText.jsx';
 import Navbar from '../components/Navbar.jsx';
 import DotGrid from '../components/DotGrid.jsx';
+import { scrollToTop } from '../utils/scrollToTop.js';
 
 // const sectionLinks = {
 //   '01': '#top',
@@ -304,7 +305,7 @@ function ProcessOverview() {
               Explore the complete DBNet and TrOCR pipeline, including image validation, text detection, geometric correction, crop filtering, and recognition.
             </p>
             <Link to="/process" className="process-page-link">
-              EXPLORE THE FULL PIPELINE <ArrowUpRight size={15} />
+              <ScrambleText text="EXPLORE THE FULL PIPELINE" /> <ArrowUpRight size={15} />
             </Link>
           </div>
         </div>
@@ -318,7 +319,7 @@ function ProjectIntroduction() {
     <section className="project-section scroll-reveal" id="project">
       <div className="container project-layout">
         <div>
-          <div className="eyebrow">04 / THE PROJECT</div>
+          <div className="eyebrow">05 / THE PROJECT</div>
 
           <h2>
             Bridging the gap
@@ -355,7 +356,7 @@ function SiteFooter() {
           DOCUMENT OCR / INTELLIGENCE / DIGITAL TEXT
         </span>
 
-        <a href="#top" className="back-top">
+        <a href="#top" className="back-top" onClick={scrollToTop}>
           <ScrambleText text="BACK TO TOP ↑" />
         </a>
       </div>

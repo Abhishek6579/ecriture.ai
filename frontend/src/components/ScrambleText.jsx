@@ -9,6 +9,7 @@ function randomGlyph() {
 export default function ScrambleText({ text, className = '' }) {
   const [display, setDisplay] = useState(text);
   const timer = useRef(null);
+  const textRef = useRef(null);
 
   const runScramble = useCallback(() => {
     if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
@@ -39,8 +40,24 @@ export default function ScrambleText({ text, className = '' }) {
     return () => window.clearInterval(timer.current);
   }, [text]);
 
+  // Trigger from the whole enclosing link/button, not just the text glyphs.
+  useEffect(() => {
+    const control = textRef.current?.closest('a, button, [role="button"]');
+    if (!control) return undefined;
+
+    const handlePointerEnter = () => runScramble();
+    const handleFocus = () => runScramble();
+    control.addEventListener('pointerenter', handlePointerEnter);
+    control.addEventListener('focus', handleFocus, true);
+
+    return () => {
+      control.removeEventListener('pointerenter', handlePointerEnter);
+      control.removeEventListener('focus', handleFocus, true);
+    };
+  }, [runScramble]);
+
   return (
-    <span className={className} aria-label={text} onMouseEnter={runScramble}>
+    <span ref={textRef} className={className} aria-label={text}>
       <span aria-hidden="true">{display}</span>
     </span>
   );

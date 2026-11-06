@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import ScrambleText from './ScrambleText.jsx';
+import { scrollToTop } from '../utils/scrollToTop.js';
 
 export default function Footer() {
   return (
@@ -11,7 +12,7 @@ export default function Footer() {
           <span>ecriture<span className="cyan">.ai</span></span>
         </Link>
         <span className="footer-description">DOCUMENT OCR / INTELLIGENCE / DIGITAL TEXT</span>
-        <a href="#top" className="back-top">
+        <a href="#top" className="back-top" onClick={scrollToTop}>
           <ScrambleText text="BACK TO TOP ↑" />
         </a>
       </div>
