@@ -84,8 +84,9 @@ a:focus-visible {
 }
 
 .section {
+  position: relative;
   padding-block: 105px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: none;
 }
 
 .section-title {

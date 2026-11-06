@@ -6,7 +6,7 @@
   top: 0;
   z-index: 20;
   height: 64px;
-  border-bottom: 1px solid var(--border);
+  /* border-bottom: 1px solid var(--border); */
   background: rgba(5, 5, 5, 0.94);
   backdrop-filter: blur(14px);
 }
@@ -112,7 +112,7 @@
 .hero {
   position: relative;
   overflow: hidden;
-  border-bottom: 1px solid var(--border);
+  /* border-bottom: 1px solid var(--border); */
 }
 
 .hero-grid-bg {
@@ -621,10 +621,10 @@
 
 .project-section {
   padding-block: 80px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 0;
   background:
     radial-gradient(ellipse at 80% 50%, #00c8ff0b, transparent 52%),
-    #080808;
+    rgba(8, 8, 8, 0.45);
 }
 
 .project-layout {
@@ -906,3 +906,42 @@
   z-index: 1;
 }
 
+
+
+/* ThreadPool-inspired section separators: subtle diagonal hatch bands instead
+   of hard, single-pixel rules. Kept local to the landing page. */
+.landing-main > section + section::before,
+.landing-main + .footer::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 3;
+  height: 14px;
+  border-top: 1px dotted rgba(145, 158, 164, 0.34);
+  border-bottom: 1px dotted rgba(145, 158, 164, 0.22);
+  background-color: rgba(145, 158, 164, 0.025);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 5px,
+    rgba(145, 158, 164, 0.30) 5px 6px,
+    transparent 6px 10px
+  );
+  content: '';
+  pointer-events: none;
+}
+
+.landing-main + .footer {
+  position: relative;
+}
+
+.landing-main > section + section {
+  position: relative;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-main > section + section::before,
+  .landing-main + .footer::before {
+    background-size: 14px 14px;
+  }
+}

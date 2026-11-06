@@ -13,7 +13,6 @@ import UnderTheHood from '../components/UnderTheHood.jsx';
 import ScrambleText from '../components/ScrambleText.jsx';
 import Navbar from '../components/Navbar.jsx';
 import DotGrid from '../components/DotGrid.jsx';
-import { scrollToTop } from '../utils/scrollToTop.js';
 
 // const sectionLinks = {
 //   '01': '#top',
@@ -356,9 +355,19 @@ function SiteFooter() {
           DOCUMENT OCR / INTELLIGENCE / DIGITAL TEXT
         </span>
 
-        <a href="#top" className="back-top" onClick={scrollToTop}>
-          <ScrambleText text="BACK TO TOP ↑" />
-        </a>
+          <a
+            href="#top"
+            className="back-top"
+            onClick={(e) => {
+              e.preventDefault();
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth',
+              });
+            }}
+          >
+            <ScrambleText text="BACK TO TOP ↑" />
+          </a>
       </div>
 
       <div className="footer-bottom">

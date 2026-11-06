@@ -114,13 +114,13 @@ body { background-image: none !important; }
 :root[data-theme='light'] .stage-detail p { color: #58666c; }
 :root[data-theme='light'] .stage-progress span { background: #d5dfe2; }
 :root[data-theme='light'] .stage-progress .progress-active { background: var(--cyan); }
-:root[data-theme='light'] .project-section { background: radial-gradient(ellipse at 80% 50%, #00a9ce0e, transparent 52%), #edf3f5; }
+:root[data-theme='light'] .project-section { background: radial-gradient(ellipse at 80% 50%, #00a9ce0e, transparent 52%), rgba(237, 243, 245, 0.48); }
 :root[data-theme='light'] .project-link { border-color: #bcc9ce; }
 :root[data-theme='light'] .footer { background: #f4f7f8; }
 :root[data-theme='light'] .footer-description,
 :root[data-theme='light'] .back-top,
 :root[data-theme='light'] .footer-bottom { color: #718087; }
-:root[data-theme='light'] .hood-section { background: radial-gradient(ellipse at 30% 55%, rgba(0, 155, 190, .055), transparent 45%), #edf3f5; }
+:root[data-theme='light'] .hood-section { background: radial-gradient(ellipse at 30% 55%, rgba(0, 155, 190, .055), transparent 45%), rgba(237, 243, 245, 0.48); }
 :root[data-theme='light'] .orbit { border-color: #cbd6da; }
 :root[data-theme='light'] .orbit-outer { border-color: #c1cdd1; }
 :root[data-theme='light'] .orbit-center { border-color: #cbd8dc; background: radial-gradient(circle at 50% 30%, #fff, #edf3f5 75%); }
@@ -211,4 +211,81 @@ body { background-image: none !important; }
     transform: none;
     transition: none;
   }
+}
+
+
+/* Landing-page light theme: slightly larger and stronger small typography so
+   metadata stays legible over the animated DotGrid background. */
+:root[data-theme='light'] .landing-main .hero-meta,
+:root[data-theme='light'] .landing-main .index-aside .mono,
+:root[data-theme='light'] .landing-main .module-number,
+:root[data-theme='light'] .landing-main .module-tag,
+:root[data-theme='light'] .landing-main .module-link,
+:root[data-theme='light'] .landing-main .process-overview .eyebrow,
+:root[data-theme='light'] .landing-main .process-page-link,
+:root[data-theme='light'] .landing-main .hood-eyebrow,
+:root[data-theme='light'] .landing-main .orbit-caption,
+:root[data-theme='light'] .landing-main .center-index,
+:root[data-theme='light'] .landing-main .center-flow,
+:root[data-theme='light'] .landing-main .detail-top,
+:root[data-theme='light'] .landing-main .detail-indicator,
+:root[data-theme='light'] .landing-main .detail-tag,
+:root[data-theme='light'] .landing-main .detail-label,
+:root[data-theme='light'] .landing-main .detail-value,
+:root[data-theme='light'] .landing-main .hood-footnote,
+:root[data-theme='light'] .landing-main .project-link,
+:root[data-theme='light'] .landing-main .scroll-cue,
+:root[data-theme='light'] .footer-description,
+:root[data-theme='light'] .back-top,
+:root[data-theme='light'] .footer-bottom {
+  font-weight: 600;
+  font-size: 9px;
+}
+
+:root[data-theme='light'] .landing-main .hero-description,
+:root[data-theme='light'] .landing-main .section-description,
+:root[data-theme='light'] .landing-main .module-card p,
+:root[data-theme='light'] .landing-main .project-layout p,
+:root[data-theme='light'] .landing-main .hood-heading > p,
+:root[data-theme='light'] .landing-main .hood-details > p {
+  color: #46565d;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+:root[data-theme='light'] .landing-main .module-card p,
+:root[data-theme='light'] .landing-main .project-layout p,
+:root[data-theme='light'] .landing-main .hood-heading > p,
+:root[data-theme='light'] .landing-main .hood-details > p {
+  line-height: 1.9;
+}
+
+:root[data-theme='light'] .landing-main .orbit-center p {
+  color: #4d5b61;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+:root[data-theme='light'] .landing-main .detail-label,
+:root[data-theme='light'] .landing-main .detail-indicator,
+:root[data-theme='light'] .landing-main .center-index,
+:root[data-theme='light'] .landing-main .center-flow,
+:root[data-theme='light'] .landing-main .orbit-caption,
+:root[data-theme='light'] .landing-main .hood-footnote,
+:root[data-theme='light'] .landing-main .detail-top {
+  color: #53636a;
+}
+
+/* Keep the hatched section treatment restrained but visible in light mode. */
+:root[data-theme='light'] .landing-main > section + section::before,
+:root[data-theme='light'] .landing-main + .footer::before {
+  border-top-color: rgba(79, 99, 108, 0.32);
+  border-bottom-color: rgba(79, 99, 108, 0.22);
+  background-color: rgba(79, 99, 108, 0.025);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 5px,
+    rgba(79, 99, 108, 0.28) 5px 6px,
+    transparent 6px 10px
+  );
 }

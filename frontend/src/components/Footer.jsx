@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import ScrambleText from './ScrambleText.jsx';
-import { scrollToTop } from '../utils/scrollToTop.js';
 
 export default function Footer() {
   return (
