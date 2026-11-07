@@ -1,8 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 const AppContext = createContext(null);
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '');
+const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
+const API_URL = (configuredApiUrl || (import.meta.env.DEV ? 'http://localhost:8000' : '')).replace(/\/+$/, '');
 const API_KEY = import.meta.env.VITE_API_KEY;
+
+function getApiConfigurationIssue() {
+  if (!API_URL) return 'VITE_API_URL is missing. Add your hosted FastAPI origin in the Vercel project environment variables, then redeploy.';
+  if (!import.meta.env.DEV && /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:|\/|$)/i.test(API_URL)) {
+    return 'VITE_API_URL points to localhost. A deployed website needs the public URL of your hosted FastAPI service.';
+  }
+  return '';
+}
 
 function getInitialTheme() {
   try {
@@ -38,6 +47,14 @@ export function AppProvider({ children }) {
 
   const checkApi = useCallback(async () => {
     if (inFlight.current) return inFlight.current;
+
+    const configurationIssue = getApiConfigurationIssue();
+    if (configurationIssue) {
+      setApiState('misconfigured');
+      setApiDetail(configurationIssue);
+      setLastChecked(new Date());
+      return 'misconfigured';
+    }
 
     setApiState('checking');
     setApiDetail('Pinging /health and checking whether the OCR model is ready.');
@@ -101,7 +118,7 @@ export function AppProvider({ children }) {
     const poll = async () => {
       const result = await checkApi();
       if (!mounted) return;
-      const delay = result === 'warming' ? 5000 : result === 'online' ? 30000 : 12000;
+      const delay = result === 'warming' ? 5000 : result === 'online' ? 30000 : result === 'misconfigured' ? 30000 : 12000;
       timer = window.setTimeout(poll, delay);
     };
 

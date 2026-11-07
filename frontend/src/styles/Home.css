@@ -621,10 +621,10 @@
 
 .project-section {
   padding-block: 80px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 0;
   background:
     radial-gradient(ellipse at 80% 50%, #00c8ff0b, transparent 52%),
-    #080808;
+    rgba(8, 8, 8, 0.45);
 }
 
 .project-layout {
@@ -906,3 +906,55 @@
   z-index: 1;
 }
 
+
+
+/* Section boundaries: slim card-outline rails with a cyan trail that sweeps
+   from one end to the other. Kept local to the landing page. */
+.landing-main > section + section::before,
+.landing-main + .footer::before {
+  position: absolute;
+  top: 0;
+  right: 26px;
+  left: 26px;
+  z-index: 3;
+  height: 10px;
+  border: 1px solid rgba(145, 158, 164, .24);
+  border-radius: 999px;
+  background-color: rgba(145, 158, 164, .018);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 39%,
+    rgba(0, 200, 255, .12) 46%,
+    rgba(0, 200, 255, .95) 50%,
+    rgba(164, 244, 255, .7) 51%,
+    rgba(0, 200, 255, .12) 55%,
+    transparent 62%,
+    transparent 100%
+  );
+  background-repeat: no-repeat;
+  background-position: 100% 50%;
+  background-size: 220% 2px;
+  box-shadow: 0 0 12px rgba(0, 200, 255, .035), inset 0 0 8px rgba(0, 200, 255, .025);
+  content: '';
+  pointer-events: none;
+  animation: section-rail-sweep 5.5s linear infinite;
+}
+
+.landing-main + .footer,
+.landing-main > section + section {
+  position: relative;
+}
+
+@keyframes section-rail-sweep {
+  0% { background-position: 100% 50%; }
+  100% { background-position: -120% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-main > section + section::before,
+  .landing-main + .footer::before {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}
