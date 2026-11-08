@@ -1,7 +1,6 @@
 from pathlib import Path
 import hashlib
 import os
-import sys
 
 import gdown
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
@@ -37,13 +36,13 @@ def main() -> None:
 
     actual_sha1 = sha1(MODEL_PATH)
     if actual_sha1 != EXPECTED_SHA1:
-        print(
-            "WARNING: The detector SHA-1 differs from the value documented by OpenCV.\n"
-            f"Expected: {EXPECTED_SHA1}\nActual:   {actual_sha1}",
-            file=sys.stderr,
+        # Remove the bad file so the next run downloads it again instead of reusing it.
+        MODEL_PATH.unlink()
+        raise RuntimeError(
+            "The detector SHA-1 differs from the value documented by OpenCV, so the file was deleted.\n"
+            f"Expected: {EXPECTED_SHA1}\nActual:   {actual_sha1}"
         )
-    else:
-        print("Detector checksum verified.")
+    print("Detector checksum verified.")
 
     # Download and save TrOCR locally once so Uvicorn never downloads on startup
     if (TROCR_LOCAL_DIR / "config.json").exists():
