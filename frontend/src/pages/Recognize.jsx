@@ -200,6 +200,7 @@ export default function Recognize() {
                     type="button"
                     className="icon-button"
                     onClick={resetPage}
+                    disabled={processing}
                     aria-label="Remove uploaded document"
                     title="Remove document"
                   >
