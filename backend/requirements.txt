@@ -28,7 +28,7 @@ opentelemetry-api==1.45.1
 optimum==2.1.0
 optimum-onnx==0.1.0
 packaging==26.3
-pillow==12.3.0
+pillow==13.0.0
 protobuf==7.36.2
 pydantic==2.14.1
 pydantic_core==2.50.1
