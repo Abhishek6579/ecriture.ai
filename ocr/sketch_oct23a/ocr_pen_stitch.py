@@ -14,10 +14,30 @@ FAIL_LIMIT   = 5          # consecutive failures before resetting the board
 
 
 def find_esp32_port():
-    for p in serial.tools.list_ports.comports():
-        d = (p.description or "").lower()
-        if "ch340" in d or "cp210" in d or "usb serial" in d or "usb-serial" in d:
+    ports = list(serial.tools.list_ports.comports())
+    markers = (
+        "ch340", "cp210", "usb serial", "usb-serial",
+        "esp32", "espressif", "ftdi"
+    )
+
+    for p in ports:
+        description = (p.description or "").lower()
+        hardware_id = (p.hwid or "").lower()
+        if any(marker in description or marker in hardware_id for marker in markers):
             return p.device
+
+    # Some Linux USB-UART adapters expose only a generic description.
+    linux_ports = [
+        p.device for p in ports
+        if p.device.startswith(("/dev/ttyUSB", "/dev/ttyACM"))
+    ]
+    if len(linux_ports) == 1:
+        return linux_ports[0]
+    if len(linux_ports) > 1:
+        print("Multiple Linux serial devices found; refusing to guess:")
+        for device in linux_ports:
+            print(f"  {device}")
+        print("Disconnect other serial devices or identify the ESP32 adapter.")
     return None
 
 
@@ -299,12 +319,19 @@ def main():
     port = find_esp32_port()
 
     if port is None:
-        print("ESP32 not found")
+        print("ESP32 not found.")
+        print("Reconnect the board and check the USB serial device.")
+        print("On Linux, check /dev/ttyUSB* or /dev/ttyACM* and serial permissions.")
         return
 
     print(f"Opening {port} @ {BAUD} baud")
 
-    ser = open_port_safe(port, BAUD)
+    try:
+        ser = open_port_safe(port, BAUD)
+    except (serial.SerialException, PermissionError) as exc:
+        print(f"Could not open serial port {port}: {exc}")
+        print("Check that the port is not in use and that your account has serial-port permissions.")
+        return
 
     print("Waiting for READY...")
     if not wait_ready(ser):
