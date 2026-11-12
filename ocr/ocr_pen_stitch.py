@@ -91,7 +91,7 @@ def capture_jpeg(ser):
         return None, "timeout on length"
     length = int.from_bytes(len_bytes, "little")
     if length == 0:
-        return None, "ESP32 camera error"
+        return None, "not recording"
     if length > MAX_LEN:
         return None, f"bad length: {length}"
 
@@ -135,6 +135,11 @@ def main():
             img, err = capture_jpeg(ser)
 
             if img is None:
+                if err == "not recording":
+                    fails = 0
+                    time.sleep(0.05)
+                    continue
+
                 fails += 1
                 print(f"  [drop] {err} (streak {fails})")
                 drain_until_quiet(ser)          # resync before the next request
