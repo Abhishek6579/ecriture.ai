@@ -41,7 +41,7 @@ requests==2.34.2
 safetensors==0.8.0
 sentencepiece==0.2.2
 setuptools==84.2.1
-soupsieve==3.0.4
+soupsieve==4.0
 starlette==1.10.0
 sympy==1.14.0
 tokenizers==0.22.2
