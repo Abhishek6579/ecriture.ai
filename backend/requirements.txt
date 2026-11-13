@@ -23,7 +23,7 @@ numpy==2.5.4
 onnx==1.23.2
 onnxruntime==1.31.1
 opencv-contrib-python-headless==4.14.0.94
-opentelemetry-api==1.45.1
+opentelemetry-api==1.45.2
 optimum==2.1.0
 optimum-onnx==0.1.0
 packaging==26.3
