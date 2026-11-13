@@ -7,7 +7,7 @@ opencv-contrib-python-headless==4.14.0.94
 Pillow==13.0.0
 python-dotenv==1.2.4
 python-multipart==0.0.32
-PyJWT[crypto]==2.10.1
+PyJWT[crypto]==2.15.0
 pytest==8.4.2
 ruff==0.14.3
 psycopg[binary]==3.2.10
