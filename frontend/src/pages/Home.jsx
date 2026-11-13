@@ -13,6 +13,7 @@ import UnderTheHood from '../components/UnderTheHood.jsx';
 import ScrambleText from '../components/ScrambleText.jsx';
 import Navbar from '../components/Navbar.jsx';
 import DotGrid from '../components/DotGrid.jsx';
+import { useAppContext } from '../context/AppContext.jsx';
 
 // const sectionLinks = {
 //   '01': '#top',
@@ -378,7 +379,23 @@ function SiteFooter() {
   );
 }
 
+// Dot-field palettes. Dark keeps the original look. Light uses pale silver dots
+// that darken to graphite near the pointer: no glow and no blue, so text stays
+// readable on top of the field.
+const DOT_THEMES = {
+  dark: { baseColor: '#3a3446', activeColor: '#06b6d4', glow: 0.5, opacity: 1 },
+  light: { baseColor: '#c3cbcf', activeColor: '#4a555b', glow: 0, opacity: 1 },
+};
+
+// Phones render the dots at a lower pixel ratio: the field covers the whole
+// landing page, and a full-resolution canvas that tall is heavy on mobile GPUs.
+const DOT_DPR = typeof window !== 'undefined'
+  && window.matchMedia?.('(max-width: 760px)').matches ? 1.5 : undefined;
+
 export default function HomePage() {
+  const { theme } = useAppContext();
+  const dots = DOT_THEMES[theme] || DOT_THEMES.dark;
+
   return (
     <>
       <Navbar />
@@ -386,8 +403,8 @@ export default function HomePage() {
       <main className="landing-main">
       <div className="landing-dot-grid" aria-hidden="true">
         <DotGrid
-          baseColor="#3a3446"
-          activeColor="#06b6d4"
+          baseColor={dots.baseColor}
+          activeColor={dots.activeColor}
           shape="circle"
           dotSize={3}
           gap={18}
@@ -400,7 +417,9 @@ export default function HomePage() {
           shockStrength={5}
           swell={0.8}
           stretch={0.5}
-          glow={0.5}
+          glow={dots.glow}
+          opacity={dots.opacity}
+          dpr={DOT_DPR}
           fade={0}
           intro={true}
         />

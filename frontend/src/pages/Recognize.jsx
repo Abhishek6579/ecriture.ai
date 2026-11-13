@@ -220,6 +220,12 @@ export default function Recognize() {
                   }}
                   onDragLeave={() => setDragging(false)}
                   onDrop={handleDrop}
+                  onClick={(event) => {
+                    // Clicking anywhere in the zone opens the picker; the two
+                    // buttons keep their own behaviour (and keyboard access).
+                    if (event.target.closest('button')) return;
+                    fileInputRef.current?.click();
+                  }}
                 >
                   <div className="upload-icon">
                     <Upload size={25} />

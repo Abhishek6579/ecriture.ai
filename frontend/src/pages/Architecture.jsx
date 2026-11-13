@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar.jsx';
+import ScrambleText from '../components/ScrambleText.jsx';
 import { useAppContext } from '../context/AppContext.jsx';
 import '../styles/Architecture.css';
 
@@ -127,7 +128,7 @@ function ArchitectureFooter() {
       <div className="architecture-footer-inner">
         <Link to="/" className="architecture-wordmark"><span>e.</span> ecriture.ai</Link>
         <span>DBNet DETECTION / TrOCR RECOGNITION</span>
-        <Link to="/recognize">TRY RECOGNITION <ArrowUpRight size={13} /></Link>
+        <Link to="/recognize"><ScrambleText text="TRY RECOGNITION" /> <ArrowUpRight size={13} /></Link>
       </div>
       <div className="architecture-footer-bottom">
         <span>© {new Date().getFullYear()} ECRITURE.AI · ALL RIGHTS RESERVED</span>
@@ -142,6 +143,11 @@ export default function Architecture() {
   const { apiState, apiDetail, checkApi } = useAppContext();
   const active = stages[activeStage];
   const ActiveIcon = active.icon;
+  const statusLabel = apiState === 'online' ? 'API CONNECTED'
+    : apiState === 'warming' ? 'MODEL WARMING'
+    : apiState === 'checking' ? 'CHECKING API'
+    : apiState === 'unauthorized' ? 'API KEY NEEDED'
+    : 'RETRY CONNECTION';
 
   return (
     <>
@@ -155,8 +161,8 @@ export default function Architecture() {
               <h1>From pixels.<br /><span className="architecture-title-accent">To readable text.</span></h1>
               <p>Inside the ecriture.ai inference engine: a CPU-optimized document OCR pipeline that detects text regions with DBNet, rectifies each line, and decodes it with TrOCR.</p>
               <div className="architecture-hero-actions">
-                <a href="#pipeline" className="architecture-primary">EXPLORE THE PIPELINE <ArrowDown size={15} /></a>
-                <Link to="/recognize" className="architecture-secondary">OPEN RECOGNITION <ArrowUpRight size={14} /></Link>
+                <a href="#pipeline" className="architecture-primary"><ScrambleText text="EXPLORE THE PIPELINE" /> <ArrowDown size={15} /></a>
+                <Link to="/recognize" className="architecture-secondary"><ScrambleText text="OPEN RECOGNITION" /> <ArrowUpRight size={14} /></Link>
               </div>
               <div className="architecture-meta">
                 <span>OPENCV DNN</span><i>/</i><span>DBNET</span><i>/</i><span>TrOCR</span><i>/</i><span>FASTAPI</span>
@@ -201,8 +207,8 @@ export default function Architecture() {
               >
                 <span className="architecture-stage-top"><span>{stage.number}</span></span>
                 <span className="architecture-stage-icon"><StageIcon size={20} strokeWidth={1.55} /></span>
-                <strong>{stage.title}</strong>
-                <small>{stage.tag}</small>
+                <strong><ScrambleText text={stage.title} stable /></strong>
+                <small><ScrambleText text={stage.tag} stable /></small>
               </button>
             );
           })}
@@ -265,7 +271,7 @@ export default function Architecture() {
           <div className="status-band-icon"><Sparkles size={19} /></div>
           <div><strong>Check the live service.</strong><p>{apiDetail}</p></div>
           <button type="button" className={`status-band-button state-${apiState}`} onClick={checkApi}>
-            {apiState === 'online' ? 'API CONNECTED' : apiState === 'warming' ? 'MODEL WARMING' : apiState === 'checking' ? 'CHECKING API' : apiState === 'unauthorized' ? 'API KEY NEEDED' : 'RETRY CONNECTION'}
+            <ScrambleText text={statusLabel} />
             <ArrowUpRight size={14} />
           </button>
         </section>

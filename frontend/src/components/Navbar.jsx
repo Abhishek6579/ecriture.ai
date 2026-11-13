@@ -38,9 +38,6 @@ export default function Navbar() {
           <NavLink to="/architecture" onClick={closeMenu} className={({ isActive }) => `site-nav-link${isActive ? ' active' : ''}`}>
             ARCHITECTURE
           </NavLink>
-          <NavLink to="/recognize" onClick={closeMenu} className={({ isActive }) => `site-nav-link${isActive ? ' active' : ''}`}>
-            RECOGNITION
-          </NavLink>
           <Link to="/recognize" className="site-nav-cta" onClick={closeMenu}>
             <ScrambleText text="OPEN WORKSPACE" /> <ArrowUpRight size={14} />
           </Link>

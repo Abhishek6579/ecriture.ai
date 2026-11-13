@@ -6,7 +6,10 @@ function randomGlyph() {
   return GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
 }
 
-export default function ScrambleText({ text, className = '' }) {
+// `stable` reserves the final text's exact size (useful for wrapping, sentence-case
+// labels such as card titles) and draws the scrambling glyphs on top, so the
+// layout never jumps while the characters change.
+export default function ScrambleText({ text, className = '', stable = false }) {
   const [display, setDisplay] = useState(text);
   const timer = useRef(null);
   const textRef = useRef(null);
@@ -55,6 +58,15 @@ export default function ScrambleText({ text, className = '' }) {
       control.removeEventListener('focus', handleFocus, true);
     };
   }, [runScramble]);
+
+  if (stable) {
+    return (
+      <span ref={textRef} className={`scramble-stable ${className}`.trim()} aria-label={text}>
+        <span className="scramble-stable-size" aria-hidden="true">{text}</span>
+        <span className="scramble-stable-live" aria-hidden="true">{display}</span>
+      </span>
+    );
+  }
 
   return (
     <span ref={textRef} className={className} aria-label={text}>

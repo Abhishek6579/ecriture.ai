@@ -186,6 +186,11 @@ const DotGrid = ({
     gl.bindVertexArray(null);
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Ripples and pointer pushes are mouse-only. On touch devices (and small
+    // screens) every scroll gesture starts with a pointer event, which used to
+    // trigger a shockwave, so the dots simply stay as a static background.
+    const compactQuery = window.matchMedia('(max-width: 760px), (hover: none) and (pointer: coarse)');
+    const interactionsOff = event => event.pointerType !== 'mouse' || compactQuery.matches;
     const view = { width: 0, height: 0, left: 0, top: 0, ratio: 1 };
     const grid = { count: 0, cols: 1, rows: 1, cell: 1, centerX: 0, centerY: 0, reach: 1 };
     let rest = new Float32Array(0);
@@ -422,6 +427,7 @@ const DotGrid = ({
     };
     const onMove = event => {
       if (!settingsRef.current.mouseInteraction) return;
+      if (interactionsOff(event)) { if (pointer.inside) onLeave(); return; }
       const [x, y] = locate(event);
       const inside = x >= 0 && y >= 0 && x <= view.width && y <= view.height;
       const time = event.timeStamp || performance.now();
@@ -436,7 +442,7 @@ const DotGrid = ({
     const onLeave = () => { pointer.inside = false; pointer.time = 0; wake(); };
     const onOut = event => { if (!event.relatedTarget) onLeave(); };
     const onDown = event => {
-      if (!settingsRef.current.clickShock || reduced) return;
+      if (!settingsRef.current.clickShock || reduced || interactionsOff(event)) return;
       const [x, y] = locate(event);
       if (x < 0 || y < 0 || x > view.width || y > view.height) return;
       shocks.push({ x, y, start: performance.now() });

@@ -5,6 +5,16 @@
   --recognize-muted: #929292;
   --recognize-text: #f1f1f1;
   --recognize-accent: #00c8ff;
+  --recognize-well: #0a0a0a;
+  --recognize-preview-bg: #151515;
+  --recognize-preview-border: #303030;
+  --recognize-result-text: #c1c1c1;
+  --recognize-strong: #ddd;
+  --recognize-hover-bg: #171717;
+  --recognize-hover-border: #777;
+  --recognize-upload-border: color-mix(in srgb, var(--recognize-accent) 58%, transparent);
+  --recognize-upload-tint: color-mix(in srgb, var(--recognize-accent) 5%, transparent);
+  --recognize-upload-glow: 0 0 28px color-mix(in srgb, var(--recognize-accent) 10%, transparent);
 
   position: relative;
   isolation: isolate;
@@ -193,18 +203,29 @@
 .upload-zone {
   min-height: 340px;
   padding: 32px 20px;
-  border: 1px dashed #3a3a3a;
+  border: 1.5px dashed var(--recognize-upload-border);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  transition: border-color 160ms ease, background 160ms ease;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+/* The accent border firms up when the zone is hovered, holds keyboard focus
+   (via its buttons), or has a file dragged over it. */
+.upload-zone:hover,
+.upload-zone:focus-within,
+.upload-zone-active {
+  border-style: solid;
+  border-color: var(--recognize-accent);
+  background: var(--recognize-upload-tint);
+  box-shadow: var(--recognize-upload-glow), inset 0 0 0 1px color-mix(in srgb, var(--recognize-accent) 26%, transparent);
 }
 
 .upload-zone-active {
-  border-color: var(--recognize-accent);
-  background: #00c8ff08;
+  background: color-mix(in srgb, var(--recognize-accent) 9%, transparent);
 }
 
 .upload-icon,
@@ -275,8 +296,8 @@
   display: flex;
   flex-direction: column;
   min-height: 340px;
-  background: #151515;
-  border: 1px solid #303030;
+  background: var(--recognize-preview-bg);
+  border: 1px solid var(--recognize-preview-border);
 }
 
 .document-preview > img {
@@ -305,7 +326,7 @@
 
 .preview-file-details strong {
   overflow: hidden;
-  color: #ddd;
+  color: var(--recognize-strong);
   font-size: 11px;
   font-weight: 500;
   text-overflow: ellipsis;
@@ -340,7 +361,7 @@
   display: flex;
   min-height: 340px;
   border: 1px solid var(--recognize-border);
-  background: #0a0a0a;
+  background: var(--recognize-well);
 }
 
 .output-empty {
@@ -391,7 +412,7 @@
 
 .output-result > p {
   margin: 20px 0 0;
-  color: #c1c1c1;
+  color: var(--recognize-result-text);
   font-size: 13px;
   line-height: 1.9;
   overflow-wrap: anywhere;
@@ -412,8 +433,8 @@
 }
 
 .secondary-button:hover:not(:disabled) {
-  border-color: #777;
-  background: #171717;
+  border-color: var(--recognize-hover-border);
+  background: var(--recognize-hover-bg);
 }
 
 .recognize-error {

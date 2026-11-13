@@ -90,7 +90,7 @@ body { background-image: none !important; }
 :root[data-theme='light'] .api-status-button { background: color-mix(in srgb, var(--status-color) 8%, white); }
 :root[data-theme='light'] .theme-toggle,
 :root[data-theme='light'] .site-menu-toggle { background: #fff; }
-:root[data-theme='light'] .hero h1 .hero-scramble { background: linear-gradient(100deg, #68747a, #087f9d 75%); background-clip: text; -webkit-background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+:root[data-theme='light'] .hero h1 .hero-scramble { background: linear-gradient(100deg, #7b868c, #1a2328 80%); background-clip: text; -webkit-background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 :root[data-theme='light'] .hero-description,
 :root[data-theme='light'] .section-description,
 :root[data-theme='light'] .module-card p,
@@ -114,13 +114,13 @@ body { background-image: none !important; }
 :root[data-theme='light'] .stage-detail p { color: #58666c; }
 :root[data-theme='light'] .stage-progress span { background: #d5dfe2; }
 :root[data-theme='light'] .stage-progress .progress-active { background: var(--cyan); }
-:root[data-theme='light'] .project-section { background: radial-gradient(ellipse at 80% 50%, #00a9ce0e, transparent 52%), rgba(237, 243, 245, 0.48); }
+:root[data-theme='light'] .project-section { background: radial-gradient(ellipse at 80% 50%, rgba(110, 124, 131, .08), transparent 52%), rgba(237, 243, 245, 0.48); }
 :root[data-theme='light'] .project-link { border-color: #bcc9ce; }
 :root[data-theme='light'] .footer { background: #f4f7f8; }
 :root[data-theme='light'] .footer-description,
 :root[data-theme='light'] .back-top,
 :root[data-theme='light'] .footer-bottom { color: #718087; }
-:root[data-theme='light'] .hood-section { background: radial-gradient(ellipse at 30% 55%, rgba(0, 155, 190, .055), transparent 45%), rgba(237, 243, 245, 0.48); }
+:root[data-theme='light'] .hood-section { background: radial-gradient(ellipse at 30% 55%, rgba(110, 124, 131, .07), transparent 45%), rgba(237, 243, 245, 0.48); }
 :root[data-theme='light'] .orbit { border-color: #cbd6da; }
 :root[data-theme='light'] .orbit-outer { border-color: #c1cdd1; }
 :root[data-theme='light'] .orbit-center { border-color: #cbd8dc; background: radial-gradient(circle at 50% 30%, #fff, #edf3f5 75%); }
@@ -146,12 +146,24 @@ body { background-image: none !important; }
   --recognize-muted: #637178;
   --recognize-text: #17252b;
   --recognize-accent: #087f9d;
+  --recognize-well: #f6f9fa;
+  --recognize-preview-bg: #f6f9fa;
+  --recognize-preview-border: #dbe2e5;
+  --recognize-result-text: #26373e;
+  --recognize-strong: #17252b;
+  --recognize-hover-bg: #eef3f5;
+  --recognize-hover-border: #8a999f;
+  --recognize-upload-border: color-mix(in srgb, var(--recognize-accent) 62%, transparent);
+  --recognize-upload-tint: color-mix(in srgb, var(--recognize-accent) 4%, #fff);
+  --recognize-upload-glow: 0 6px 18px rgba(25, 48, 58, .06);
 }
 :root[data-theme='light'] .recognize-page .recognize-heading > p { color: #59676d; }
 :root[data-theme='light'] .recognize-page .document-panel,
 :root[data-theme='light'] .recognize-page .output-panel { background: #fff; }
-:root[data-theme='light'] .recognize-page .upload-zone { border-color: #c3d0d5; background: #fbfdfe; }
-:root[data-theme='light'] .recognize-page .upload-zone-active { background: #eef9fb; }
+:root[data-theme='light'] .recognize-page .upload-zone { background: #fbfdfe; }
+:root[data-theme='light'] .recognize-page .upload-zone:hover,
+:root[data-theme='light'] .recognize-page .upload-zone:focus-within { background: var(--recognize-upload-tint); }
+:root[data-theme='light'] .recognize-page .upload-zone-active { background: color-mix(in srgb, var(--recognize-accent) 8%, #fff); }
 :root[data-theme='light'] .recognize-page .upload-icon,
 :root[data-theme='light'] .recognize-page .output-empty-icon { border-color: #dbe3e6; background: #f2f7f8; }
 :root[data-theme='light'] .recognize-page .output-result { color: #26373e; }
@@ -186,14 +198,14 @@ body { background-image: none !important; }
 :root[data-theme='light'] .architecture-engine-card { border-color: #cbd7dc; }
 :root[data-theme='light'] .engine-node { box-shadow: 0 5px 18px rgba(25, 48, 58, .09); }
 :root[data-theme='light'] .architecture-stage { background: #fff; }
-:root[data-theme='light'] .architecture-stage-active { background: #edf8fa; }
+:root[data-theme='light'] .architecture-stage-active { background: #f0f3f4; }
 :root[data-theme='light'] .architecture-detail-spec,
 :root[data-theme='light'] .contract-card { background: #fff; }
 :root[data-theme='light'] .contract-card pre { background: #f3f7f8; color: #176a50; }
-:root[data-theme='light'] .architecture-status-band { background: linear-gradient(100deg, #eaf7f9, #fff); }
+:root[data-theme='light'] .architecture-status-band { background: linear-gradient(100deg, #eff2f3, #fff); }
 :root[data-theme='light'] .architecture-footer { background: #edf2f4; }
 :root[data-theme='light'] .architecture-footer-bottom { border-color: #d8e1e4; }
-:root[data-theme='light'] .architecture-engine-card .engine-node-b { color: #6559bb; }
+:root[data-theme='light'] .architecture-engine-card .engine-node { color: #33424a; }
 
 @media (max-width: 500px) {
   :root[data-theme='light'] .api-status-button { background: color-mix(in srgb, var(--status-color) 8%, white); }
@@ -286,7 +298,18 @@ body { background-image: none !important; }
 :root[data-theme='light'] .landing-main + .footer::before {
   border-color: rgba(83, 105, 114, .28);
   background-color: rgba(83, 105, 114, .025);
-  box-shadow: 0 0 12px rgba(8, 127, 157, .035), inset 0 0 8px rgba(8, 127, 157, .025);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 39%,
+    rgba(120, 132, 138, .12) 46%,
+    rgba(26, 35, 40, .85) 50%,
+    rgba(176, 186, 191, .8) 51%,
+    rgba(120, 132, 138, .12) 55%,
+    transparent 62%,
+    transparent 100%
+  );
+  box-shadow: none;
 }
 
 
@@ -298,8 +321,79 @@ body { background-image: none !important; }
   background: radial-gradient(ellipse at 80% 50%, rgba(0, 200, 255, .045), transparent 52%), rgba(8, 8, 8, .14) !important;
 }
 :root[data-theme='light'] .landing-main .hood-section {
-  background: radial-gradient(ellipse at 30% 55%, rgba(0, 155, 190, .045), transparent 45%), rgba(237, 243, 245, .16) !important;
+  background: radial-gradient(ellipse at 30% 55%, rgba(110, 124, 131, .06), transparent 45%), rgba(237, 243, 245, .16) !important;
 }
 :root[data-theme='light'] .landing-main .project-section {
-  background: radial-gradient(ellipse at 80% 50%, rgba(0, 155, 190, .05), transparent 52%), rgba(237, 243, 245, .16) !important;
+  background: radial-gradient(ellipse at 80% 50%, rgba(110, 124, 131, .06), transparent 52%), rgba(237, 243, 245, .16) !important;
 }
+
+
+/* ==========================================================================
+   Light theme: black and silver. No neon glows, blue washes or sweeps.
+   Dark theme is untouched; everything below is scoped to light only.
+   The flat teal accent stays for buttons, labels and the upload border.
+   ========================================================================== */
+
+/* Navigation */
+:root[data-theme='light'] .site-nav-link.active::after { box-shadow: none; }
+:root[data-theme='light'] .api-status-button { box-shadow: none; }
+:root[data-theme='light'] .api-status-button::before { display: none; }
+:root[data-theme='light'] .api-status-button:hover { box-shadow: 0 6px 16px rgba(25, 48, 58, .1); }
+
+/* Landing page */
+:root[data-theme='light'] .status-dot { box-shadow: none; }
+:root[data-theme='light'] .visual-canvas::after {
+  background: linear-gradient(180deg, transparent, #4a555b 18%, #4a555b 82%, transparent);
+  box-shadow: none;
+}
+:root[data-theme='light'] .orbit-inner { border-color: #cbd6da; box-shadow: none; }
+:root[data-theme='light'] .orbit-center:hover { border-color: #9aa8ae; }
+:root[data-theme='light'] .center-icon { border-color: #cbd6da; }
+:root[data-theme='light'] .orbit-node:hover,
+:root[data-theme='light'] .orbit-node-active { box-shadow: none; }
+
+/* Architecture / process page */
+:root[data-theme='light'] .architecture-hero {
+  background: radial-gradient(ellipse at 85% 36%, rgba(120, 134, 141, .12), transparent 42%);
+}
+:root[data-theme='light'] .architecture-eyebrow > span { box-shadow: none; animation-name: arch-pulse-flat; }
+@keyframes arch-pulse-flat { 50% { opacity: .45; } }
+:root[data-theme='light'] .architecture-title-accent {
+  background: linear-gradient(100deg, #7b868c, #1a2328 80%);
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+:root[data-theme='light'] .architecture-primary:hover { box-shadow: 0 8px 22px rgba(25, 40, 48, .14); }
+:root[data-theme='light'] .engine-pulse i { box-shadow: none; }
+:root[data-theme='light'] .engine-orbit { border-color: rgba(98, 112, 119, .34); }
+:root[data-theme='light'] .engine-orbit-b { border-color: rgba(98, 112, 119, .26); }
+:root[data-theme='light'] .engine-core-mark {
+  border-color: #aab5ba;
+  background: radial-gradient(circle, #f3f6f7, #fff 72%);
+  color: #26343a;
+  box-shadow: none;
+}
+:root[data-theme='light'] .engine-flow b { background: linear-gradient(90deg, #b3bdc2, #2a363c); }
+:root[data-theme='light'] .engine-card-bottom em { color: #55616a; }
+:root[data-theme='light'] .architecture-stage:hover { border-color: #8d9ba1; }
+:root[data-theme='light'] .architecture-stage-active { box-shadow: none; }
+:root[data-theme='light'] .architecture-stage:not(:last-child)::after {
+  background-image: radial-gradient(circle, #6f7b81 1.1px, transparent 1.45px);
+}
+:root[data-theme='light'] .spec-progress button.selected { box-shadow: none; }
+:root[data-theme='light'] .status-band-button:hover { box-shadow: 0 6px 16px rgba(25, 48, 58, .1); }
+
+/* Workspace: recognition page */
+:root[data-theme='light'] .recognize-page .recognize-status-dot { box-shadow: none; }
+:root[data-theme='light'] .recognize-page .recognize-button:hover:not(:disabled) { background: #066b85; border-color: #066b85; }
+:root[data-theme='light'] .recognize-page .icon-button:hover { color: #0f1b20; border-color: #8a999f; }
+:root[data-theme='light'] .recognize-page .demo-badge { border-color: #d9c78f; color: #84631a; }
+:root[data-theme='light'] .recognize-page .recognize-error { border-color: #e2a3a3; color: #a32626; }
+:root[data-theme='light'] .recognize-page .output-empty h3 { color: #17252b; }
+:root[data-theme='light'] .recognize-page .upload-zone h3 { color: #17252b; }
+:root[data-theme='light'] .recognize-page .upload-formats { color: #6b787e; }
+
+/* ScrambleText `stable` mode: reserve the final size, draw glyphs on top. */
+.scramble-stable { position: relative; display: inline-block; max-width: 100%; }
+.scramble-stable-size { visibility: hidden; }
+.scramble-stable-live { position: absolute; top: 0; left: 0; width: 100%; }
