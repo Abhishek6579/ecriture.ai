@@ -2,6 +2,8 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import Home from './pages/Home.jsx';
 import Recognize from './pages/Recognize.jsx';
+import Login from './pages/Login.jsx';
+import RequireAuth from './components/RequireAuth.jsx';
 import Architecture from './pages/Architecture.jsx';
 import PointerSpotlight from './components/PointerSpotlight.jsx';
 
@@ -51,8 +53,9 @@ function App() {
       <ScrollRevealObserver />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/recognize" element={<Recognize />} />
-        <Route path="/recognition" element={<Recognize />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/recognize" element={<RequireAuth><Recognize /></RequireAuth>} />
+        <Route path="/recognition" element={<RequireAuth><Recognize /></RequireAuth>} />
         <Route path="/architecture" element={<Architecture />} />
         <Route path="/process" element={<Architecture />} />
       </Routes>

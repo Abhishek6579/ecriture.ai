@@ -32,3 +32,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Useless instructions
+AZURE_DEPLOYMENT.md
+# Local secrets
+/backend/env
+/backend/.env
+/backend/.env.*
+!/backend/.env.example

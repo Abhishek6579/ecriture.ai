@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { ArrowUpRight, Check, ChevronDown, CircleAlert, LoaderCircle, Menu, Moon, Sun, WifiOff, X } from 'lucide-react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { ArrowUpRight, Check, ChevronDown, CircleAlert, LoaderCircle, LogOut, Menu, Moon, Sun, UserRound, WifiOff, X } from 'lucide-react';
 import { useAppContext } from '../context/AppContext.jsx';
+import { useAuthContext } from '../context/AuthContext.jsx';
 import ScrambleText from './ScrambleText.jsx';
 import '../styles/SiteNav.css';
 
@@ -10,18 +11,27 @@ const STATUS = {
   online: { label: 'API CONNECTED', Icon: Check },
   warming: { label: 'MODEL WARMING', Icon: LoaderCircle },
   offline: { label: 'API OFFLINE', Icon: WifiOff },
-  unauthorized: { label: 'API KEY NEEDED', Icon: CircleAlert },
+  unauthorized: { label: 'API HEALTH ERROR', Icon: CircleAlert },
   misconfigured: { label: 'API URL NEEDED', Icon: CircleAlert },
 };
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { theme, toggleTheme, apiState, apiDetail, lastChecked, checkApi } = useAppContext();
+  const { user, usage, signOut } = useAuthContext();
+  const navigate = useNavigate();
   const status = STATUS[apiState] || STATUS.checking;
   const StatusIcon = status.Icon;
   const ThemeIcon = theme === 'dark' ? Sun : Moon;
-  const compactStatus = { online: 'API OK', warming: 'WARMING', checking: 'CHECKING', offline: 'OFFLINE', unauthorized: 'KEY NEEDED', misconfigured: 'SET URL' }[apiState] || 'CHECKING';
+  const compactStatus = { online: 'API OK', warming: 'WARMING', checking: 'CHECKING', offline: 'OFFLINE', unauthorized: 'API ERROR', misconfigured: 'SET URL' }[apiState] || 'CHECKING';
   const closeMenu = () => setMenuOpen(false);
+
+  async function handleSignOut() {
+    const { error } = await signOut();
+    if (error) console.error('Sign-out failed:', error.message);
+    closeMenu();
+    navigate('/login');
+  }
 
   return (
     <header className="site-nav" id="top">
@@ -56,11 +66,27 @@ export default function Navbar() {
             <span className="api-status-orbit"><StatusIcon size={13} strokeWidth={2.3} /></span>
             <span className="api-status-copy">
               <strong>{status.label}</strong>
-              <small>{apiState === 'online' ? 'SYSTEM READY' : apiState === 'warming' ? 'LOADING MODELS' : apiState === 'checking' ? 'PINGING /HEALTH' : apiState === 'unauthorized' ? 'CHECK API KEY' : apiState === 'misconfigured' ? 'SET VITE_API_URL' : 'RETRY CONNECTION'}</small>
+              <small>{apiState === 'online' ? 'SYSTEM READY' : apiState === 'warming' ? 'LOADING MODELS' : apiState === 'checking' ? 'PINGING /HEALTH' : 'RETRY CONNECTION'}</small>
             </span>
             <span className="api-status-compact">{compactStatus}</span>
             <span className="api-status-refresh"><ChevronDown size={12} /></span>
           </button>
+
+          {user ? (
+            <>
+              <span className="site-nav-usage" title={`${usage?.scans_used ?? '—'} of ${usage?.scan_limit ?? '—'} free scans used`}>
+                <strong>{usage?.scans_remaining ?? '—'}</strong>
+                <small>SCANS LEFT</small>
+              </span>
+              <button type="button" className="site-nav-auth" onClick={handleSignOut} title={`Sign out ${user.email || ''}`}>
+                <LogOut size={15} /><span>SIGN OUT</span>
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="site-nav-auth" onClick={closeMenu}>
+              <UserRound size={15} /><span>SIGN IN</span>
+            </Link>
+          )}
 
           <button
             type="button"

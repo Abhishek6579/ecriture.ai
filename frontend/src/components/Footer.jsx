@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { ArrowUpRight } from 'lucide-react';
 import ScrambleText from './ScrambleText.jsx';
 
 function scrollToTop(event) {

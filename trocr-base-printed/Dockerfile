@@ -30,11 +30,11 @@ COPY backend/download_detector.py trocr-base-printed/fetch_models.py ./
 RUN python fetch_models.py && rm -rf /root/.cache/huggingface
 ENV HF_HUB_OFFLINE=1
 
-COPY backend/main.py backend/ocr_engine.py backend/preprocess.py trocr-base-printed/app.py ./
+COPY backend/main.py backend/auth.py backend/quota_store.py backend/ocr_engine.py backend/preprocess.py trocr-base-printed/app.py ./
 
 # Measured peak under a 2 GB cap: batch 1 = 1.85 GB (fits), batch 4 = OOM.
 # On a 4 GB instance, OCR_BATCH_SIZE=4 is ~25% faster.
-# Set API_KEY (and ALLOWED_ORIGINS for the frontend) at runtime, as for backend/Dockerfile.
+# Set Supabase runtime credentials and ALLOWED_ORIGINS at runtime, as for backend/Dockerfile.
 ENV MALLOC_ARENA_MAX=2 \
     OCR_BATCH_SIZE=1
 

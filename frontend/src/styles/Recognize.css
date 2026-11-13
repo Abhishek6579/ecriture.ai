@@ -617,3 +617,14 @@
     opacity: 0.25;
   }
 }
+
+.quota-exhausted-note {
+  max-width: 1200px;
+  margin: 18px auto 0;
+  padding: 13px 16px;
+  border: 1px solid color-mix(in srgb, #d9a64b 42%, var(--recognize-border));
+  color: var(--recognize-text);
+  background: color-mix(in srgb, #d9a64b 7%, transparent);
+  font-size: 12px;
+  line-height: 1.7;
+}

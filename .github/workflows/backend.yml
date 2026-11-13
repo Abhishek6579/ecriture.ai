@@ -1,0 +1,259 @@
+name: Backend CI and Azure Container Apps CD
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "backend/**"
+      - "supabase/migrations/**"
+      - ".github/workflows/backend.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "supabase/migrations/**"
+      - ".github/workflows/backend.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint and API tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ecriture_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ecriture_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ecriture_test
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Prepare Supabase-like PostgreSQL schema
+        working-directory: .
+        run: |
+          python - <<'PYSQL'
+          from pathlib import Path
+          import psycopg
+
+          dsn = "postgresql://postgres:postgres@localhost:5432/ecriture_test"
+          with psycopg.connect(dsn, autocommit=True) as connection:
+              for role in ("anon", "authenticated", "service_role"):
+                  connection.execute(f"CREATE ROLE {role} NOLOGIN")
+              connection.execute("CREATE SCHEMA auth")
+              connection.execute("CREATE TABLE auth.users (id uuid PRIMARY KEY)")
+              migration = Path("supabase/migrations/20261113000000_auth_and_scan_quota.sql").read_text()
+              connection.execute(migration, prepare=False)
+          PYSQL
+
+      - name: Run Ruff
+        run: ruff check .
+
+      - name: Run unit, API and PostgreSQL quota tests
+        run: pytest -q
+
+  docker-build-smoke:
+    name: Build production Docker image and check startup
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build production backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          tags: ecriture-backend:ci
+          load: true
+          cache-from: type=gha,scope=ecriture-backend
+          cache-to: type=gha,mode=max,scope=ecriture-backend
+
+      - name: Start container with the real OCR models
+        run: |
+          docker run --detach --rm --name ecriture-backend-ci \
+            --publish 8000:8000 \
+            --env PORT=8000 \
+            ecriture-backend:ci
+
+      - name: Wait for public model readiness endpoint
+        shell: bash
+        run: |
+          for attempt in $(seq 1 120); do
+            response="$(curl --silent --show-error --fail http://127.0.0.1:8000/health || true)"
+            echo "Health response: ${response:-not ready}"
+            if [[ "$response" == *'"model_loaded":true'* ]]; then
+              exit 0
+            fi
+            sleep 5
+          done
+          docker logs ecriture-backend-ci
+          exit 1
+
+      - name: Stop container
+        if: always()
+        run: docker stop ecriture-backend-ci || true
+
+  publish-and-deploy:
+    name: Publish to Docker Hub and deploy to Azure Container Apps
+    runs-on: ubuntu-latest
+    needs: [test, docker-build-smoke]
+    # Deployment is intentionally limited to pushes to the production branch.
+    # Pull requests and workflow_dispatch runs validate only; they never deploy.
+    if: >-
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      IMAGE_NAME: dinokiller0607/ecriture-ai
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push commit-SHA and latest image tags
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            docker.io/dinokiller0607/ecriture-ai:latest
+            docker.io/dinokiller0607/ecriture-ai:${{ github.sha }}
+          cache-from: type=gha,scope=ecriture-backend
+          cache-to: type=gha,mode=max,scope=ecriture-backend
+
+      - name: Log in to Azure using GitHub OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy the commit-tagged image to Azure Container Apps
+        id: deploy
+        env:
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          AZURE_CONTAINER_APP_NAME: ${{ vars.AZURE_CONTAINER_APP_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${AZURE_RESOURCE_GROUP:?Set the AZURE_RESOURCE_GROUP GitHub Actions variable}"
+          : "${AZURE_CONTAINER_APP_NAME:?Set the AZURE_CONTAINER_APP_NAME GitHub Actions variable}"
+
+          az extension add --name containerapp --upgrade
+
+          IMAGE="docker.io/${IMAGE_NAME}:${IMAGE_TAG}"
+          echo "Deploying ${IMAGE}"
+          az containerapp update \
+            --name "${AZURE_CONTAINER_APP_NAME}" \
+            --resource-group "${AZURE_RESOURCE_GROUP}" \
+            --image "${IMAGE}" \
+            --output none
+
+          # In multiple-revision mode, explicitly move production traffic to
+          # the newly-created latest revision. This project uses full cutover,
+          # not canary traffic splitting.
+          REVISION_MODE="$(az containerapp show \
+            --name "${AZURE_CONTAINER_APP_NAME}" \
+            --resource-group "${AZURE_RESOURCE_GROUP}" \
+            --query properties.configuration.activeRevisionsMode \
+            --output tsv)"
+          if [[ "${REVISION_MODE,,}" == "multiple" ]]; then
+            az containerapp ingress traffic set \
+              --name "${AZURE_CONTAINER_APP_NAME}" \
+              --resource-group "${AZURE_RESOURCE_GROUP}" \
+              --revision-weight latest=100 \
+              --output none
+          fi
+
+          DEPLOYED_IMAGE="$(az containerapp show \
+            --name "${AZURE_CONTAINER_APP_NAME}" \
+            --resource-group "${AZURE_RESOURCE_GROUP}" \
+            --query properties.template.containers[0].image \
+            --output tsv)"
+          echo "Azure Container App now references: ${DEPLOYED_IMAGE}"
+          if [[ "${DEPLOYED_IMAGE}" != "${IMAGE}" ]]; then
+            echo "Azure reports an unexpected image after deployment." >&2
+            exit 1
+          fi
+
+      - name: Verify the Azure Container Apps health endpoint
+        env:
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          AZURE_CONTAINER_APP_NAME: ${{ vars.AZURE_CONTAINER_APP_NAME }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          FQDN="$(az containerapp show \
+            --name "${AZURE_CONTAINER_APP_NAME}" \
+            --resource-group "${AZURE_RESOURCE_GROUP}" \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)"
+          if [[ -z "${FQDN}" || "${FQDN}" == "None" ]]; then
+            echo "No Container Apps ingress FQDN is configured; deployment succeeded, but external HTTP verification is unavailable."
+            exit 0
+          fi
+
+          for attempt in $(seq 1 90); do
+            RESPONSE="$(curl --silent --show-error --fail --max-time 15 "https://${FQDN}/health" || true)"
+            echo "Health response: ${RESPONSE:-not ready}"
+            if [[ "${RESPONSE}" == *'"model_loaded":true'* ]]; then
+              echo "Azure Container Apps is serving the new image and the OCR model is loaded."
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "Health check did not report model_loaded=true within 15 minutes." >&2
+          az containerapp logs show \
+            --name "${AZURE_CONTAINER_APP_NAME}" \
+            --resource-group "${AZURE_RESOURCE_GROUP}" \
+            --type console \
+            --tail 100 || true
+          exit 1

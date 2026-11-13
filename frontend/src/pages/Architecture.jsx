@@ -32,7 +32,7 @@ const stages = [
       'Supported formats: JPEG, PNG, and WebP.',
       'Maximum upload size: 15 MB by default.',
       'The file is submitted in the `file` field to `POST /ocr`.',
-      'The frontend can add the X-API-Key header from VITE_API_KEY.',
+      'The frontend sends a Supabase access token as a Bearer token; FastAPI verifies the identity before OCR.',
     ],
     output: 'Uploaded image file',
   },
@@ -43,7 +43,7 @@ const stages = [
     icon: ShieldCheck,
     description: 'FastAPI authenticates the request, checks its size, decodes the image, and passes a valid BGR image to the OCR engine.',
     details: [
-      'API key authentication uses the X-API-Key request header.',
+      'The user-specific Supabase Bearer token is verified before a quota reservation is made.',
       'Oversized, empty, or undecodable images are rejected before inference.',
       'INFERENCE_LOCK serializes inference requests to limit CPU oversubscription and memory spikes.',
       'GET /health reports API availability and whether the OCR singleton is initialized.',
@@ -146,7 +146,7 @@ export default function Architecture() {
   const statusLabel = apiState === 'online' ? 'API CONNECTED'
     : apiState === 'warming' ? 'MODEL WARMING'
     : apiState === 'checking' ? 'CHECKING API'
-    : apiState === 'unauthorized' ? 'API KEY NEEDED'
+    : apiState === 'unauthorized' ? 'API HEALTH ERROR'
     : 'RETRY CONNECTION';
 
   return (
@@ -278,7 +278,7 @@ export default function Architecture() {
 
         <section className="architecture-caveat container scroll-reveal">
           <div className="caveat-icon"><Layers3 size={20} /></div>
-          <div><strong>Current scope and known constraint</strong><p>The implemented reading-order heuristic is designed for single-column pages; multi-column layouts need a more advanced layout-analysis pass. Recognition quality depends on image clarity and the model's interpretation of line crops. For local demos, the browser may send VITE_API_KEY as X-API-Key, but VITE_* values are visible in the compiled client bundle. A public deployment should place this authenticated API behind a server-side proxy instead of exposing a shared key.</p></div>
+          <div><strong>Current scope and known constraint</strong><p>The implemented reading-order heuristic is designed for single-column pages; multi-column layouts need a more advanced layout-analysis pass. Recognition quality depends on image clarity and the model's interpretation of line crops. The browser sends a user-specific Supabase access token as a Bearer token. FastAPI verifies the token and checks the user's server-side scan allowance before invoking OCR. The Supabase secret key is stored only in the backend environment and is never sent to the browser.</p></div>
         </section>
       </main>
       <ArchitectureFooter />

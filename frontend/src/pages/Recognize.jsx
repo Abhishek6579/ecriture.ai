@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import {
   Upload,
   Camera,
@@ -17,6 +17,7 @@ import Navbar from '../components/Navbar.jsx';
 import Footer from '../components/Footer.jsx';
 import LetterGlitch from '../components/LetterGlitch.jsx';
 import { recognizeImage } from '../services/ocrService.js';
+import { useAuthContext } from '../context/AuthContext.jsx';
 import '../styles/Recognize.css';
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
@@ -29,6 +30,8 @@ const ACCEPTED_TYPES = [
 ];
 
 export default function Recognize() {
+  const { usage, refreshUsage, getAccessToken } = useAuthContext();
+  const scansExhausted = usage && usage.scans_remaining <= 0;
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
   const [file, setFile] = useState(null);
@@ -121,6 +124,10 @@ export default function Recognize() {
 
   async function handleRecognize() {
     if (!file || processing) return;
+    if (scansExhausted) {
+      setError('You have used all free scans available to your account.');
+      return;
+    }
 
     setProcessing(true);
     setError('');
@@ -128,7 +135,9 @@ export default function Recognize() {
     setCopied(false);
 
     try {
-      const result = await recognizeImage(file);
+      const accessToken = await getAccessToken();
+      const result = await recognizeImage(file, accessToken);
+      await refreshUsage(accessToken);
 
       if (result.text) {
         setOutput(result.text);
@@ -136,7 +145,12 @@ export default function Recognize() {
         setError('No text was detected. Try a sharper image of printed text.');
       }
     } catch (err) {
-      setError(err.message);
+      if (err.code === 'quota_exceeded') {
+        await refreshUsage();
+        setError('You have used all free scans available to your account.');
+      } else {
+        setError(err.message);
+      }
     } finally {
       setProcessing(false);
     }
@@ -183,7 +197,7 @@ export default function Recognize() {
             </div>
 
             <span className="demo-badge">
-              PRINTED TEXT OCR
+              {scansExhausted ? 'FREE SCANS USED' : usage ? `${usage.scans_remaining} FREE SCANS LEFT` : 'PRINTED TEXT OCR'}
             </span>
           </div>
 
@@ -410,18 +424,25 @@ export default function Recognize() {
                 type="button"
                 className="recognize-button"
                 onClick={handleRecognize}
-                disabled={!file || processing}
+                disabled={!file || processing || scansExhausted}
+                title={scansExhausted ? 'Your free scan allowance has been used.' : 'Run OCR on this document'}
               >
                 {processing ? (
                   <LoaderCircle size={16} className="loading-icon" />
                 ) : (
                   <ScanText size={16} />
                 )}
-                {processing ? 'Processing...' : 'Recognize text'}
+                {processing ? 'Processing...' : scansExhausted ? 'Scan limit reached' : 'Recognize text'}
               </button>
             </div>
           </div>
         </section>
+
+        {scansExhausted && (
+          <div className="quota-exhausted-note" role="status">
+            You have used all {usage.scan_limit} free scans on this account. Your allowance is shared across devices and sessions.
+          </div>
+        )}
 
         <p className="preservation-note">
           ECRITURE.AI / PRESERVING PRINTED KNOWLEDGE FOR THE DIGITAL AGE
