@@ -1,5 +1,5 @@
 # Production CPU image. The model files are fetched and checksum-verified at build time.
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
