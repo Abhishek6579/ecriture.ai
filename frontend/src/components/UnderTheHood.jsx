@@ -16,7 +16,7 @@ const pipelineSteps = [
     title: 'Image input',
     short: 'UPLOAD',
     description:
-      'A JPG, PNG, or WebP page image enters the FastAPI service as multipart form data. The API key and 15 MB upload limit are checked before image decoding.',
+      'A JPG, PNG, or WebP page image enters FastAPI as multipart form data. The user JWT is verified, then the upload and 15 MB size limit are checked before inference.',
     icon: ImageIcon,
   },
   {

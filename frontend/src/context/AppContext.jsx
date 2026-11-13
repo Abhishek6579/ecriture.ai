@@ -3,7 +3,6 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 const AppContext = createContext(null);
 const configuredApiUrl = (import.meta.env.VITE_API_URL || '').trim();
 const API_URL = (configuredApiUrl || (import.meta.env.DEV ? 'http://localhost:8000' : '')).replace(/\/+$/, '');
-const API_KEY = import.meta.env.VITE_API_KEY;
 
 function getApiConfigurationIssue() {
   if (!API_URL) return 'VITE_API_URL is missing. Add your hosted FastAPI origin in the Vercel project environment variables, then redeploy.';
@@ -66,14 +65,13 @@ export function AppProvider({ children }) {
       try {
         const response = await fetch(`${API_URL}/health`, {
           method: 'GET',
-          headers: API_KEY ? { 'X-API-Key': API_KEY } : {},
           signal: controller.signal,
           cache: 'no-store',
         });
 
         if (response.status === 401 || response.status === 403) {
           setApiState('unauthorized');
-          setApiDetail('The API is reachable, but the health check rejected the key. Check VITE_API_KEY.');
+          setApiDetail('The public health endpoint rejected the request. Check the backend deployment and routing.');
           return 'unauthorized';
         }
 

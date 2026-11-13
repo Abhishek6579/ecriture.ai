@@ -1,62 +1,46 @@
-# trocr-base-printed API
+# trocr-base-printed API image
 
-A second deployable image of the backend that recognises text with
-`microsoft/trocr-base-printed` (~334M params) instead of `trocr-small-stage1`, exported to
-**int8 ONNX** at build time. The backend code (`backend/*.py`) is used unchanged. The model is
-switched through env vars the engine already reads: `OCR_BACKEND=onnx`, `TROCR_ONNX_DIR`,
-`TROCR_MODEL_ID`.
+This is an alternative backend image that recognises text with
+`microsoft/trocr-base-printed` (~334M parameters), exported to int8 ONNX at build time.
+It imports the shared FastAPI application from `backend/main.py`, so it receives the
+same Supabase authentication and server-enforced scan quota as `backend/Dockerfile`.
 
 | File | Purpose |
 | :--- | :--- |
-| `Dockerfile` | CPU-only image with the int8 weights baked in |
-| `fetch_models.py` | Downloads DBNet (constants from `download_detector.py`), exports trocr-base-printed to ONNX, quantizes it to int8 |
-| `app.py` | Imports `main.app` and opens ONNX Runtime sessions in low-memory mode |
+| `Dockerfile` | CPU-only image with int8 weights baked in |
+| `fetch_models.py` | Downloads checksum-verified DBNet, exports TrOCR to ONNX and quantizes it |
+| `app.py` | Applies low-memory ONNX Runtime settings and imports `main.app` |
 
 ## Build and run
 
-From the repo root:
+Run from the repository root:
 
 ```bash
 docker build -f trocr-base-printed/Dockerfile -t ecriture-trocr-base .
-docker run -p 8000:8000 -e API_KEY=change-me ecriture-trocr-base
+docker run -p 8000:8000 --env-file backend/.env ecriture-trocr-base
 ```
 
-`/health` and `/ocr` need the `X-API-Key` header (see `backend/main.py`):
+`GET /health` is public. `GET /api/me`, `GET /api/me/usage`, and `POST /ocr` require a
+Supabase access token:
 
 ```bash
-curl -H "X-API-Key: change-me" -F "file=@page.jpg" http://localhost:8000/ocr
+curl -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+  -F "file=@page.jpg" http://localhost:8000/ocr
 ```
 
-The first build downloads ~1.5 GB (torch and the model). pip is upgraded first so dropped
-downloads resume instead of failing with `THESE PACKAGES DO NOT MATCH THE HASHES`.
+The first build is substantially larger and slower than `backend/Dockerfile`: it exports
+and quantizes the TrOCR base checkpoint. The regular backend image is the recommended
+starting point unless the base model's recognition quality is worth its additional build
+and memory cost.
 
-## Measured (in the container, Linux, cgroup `memory.peak`, 3–4 line page)
+## Deployment note
 
-| Config | Peak RAM | Time per page | Under 2 GB cap |
-| :--- | :--- | :--- | :--- |
-| fp32 PyTorch | ~2.2–2.4 GB | ~14 s | OOM-killed |
-| int8 ONNX, default ORT sessions, batch 4 | 2.39 GB | ~7 s | OOM-killed |
-| + low-memory sessions (`app.py`), batch 4 | 1.95 GB | ~7 s | OOM-killed |
-| + low-memory sessions, **batch 1 (image default)** | **1.79 GB** | ~7–11 s | **runs** |
-
-The output matches the fp32 model. Most of the memory isn't TrOCR: the DBNet detector at
-736×736 takes ~600 MB, and torch, which the engine imports even in ONNX mode, ~300 MB.
-
-## Deploy on Render
-
-New → Web Service → this repo, Language **Docker**:
-
-- **Dockerfile Path**: `trocr-base-printed/Dockerfile`
-- **Docker Build Context Directory**: `.` (repo root)
-- **Health Check Path**: `/` (`/health` needs the API key, which health checks can't send)
-- **Instance type**: **Standard (2 GB)** works with the defaults (~200 MB headroom).
-  Free and Starter (512 MB) run out of memory. On Pro (4 GB), set `OCR_BATCH_SIZE=4` for ~25% more speed.
-- **Environment**: `API_KEY=<secret>`, `ALLOWED_ORIGINS=https://<your-frontend-domain>`
-
-No `PORT` setup is needed: the container listens on Render's `$PORT`.
-
-The frontend points at it through `frontend/.env.local` (see `frontend/.env.example`):
-`VITE_API_URL=https://<service>.onrender.com` and `VITE_API_KEY=<same secret>`.
+The production deployment described in the root README uses `backend/Dockerfile` and
+publishes `dinokiller0607/ecriture-ai` to Docker Hub before updating the existing Azure
+Container App. This alternative TrOCR-base image is **not** built or deployed by the
+production GitHub Actions workflow. If you intentionally switch production to this image,
+update the CI build context, Dockerfile path, model smoke test, and image deployment workflow
+before pushing it to Azure.
 
 The log line `Could not find any ONNX files with standard file name decoder_model_merged.onnx`
-is expected: the decoder is exported unmerged so it can be quantized.
+can be expected because the decoder is exported unmerged for quantization.
